@@ -11,6 +11,8 @@ import { SoundManager } from "./SoundManager";
 import { TimerManager } from "./TimerManager";
 import UndoManager from "./UndoManager";
 
+const CHEATS_ENABLED = false;
+
 class ControlManager
 {
     update()
@@ -43,6 +45,8 @@ class ControlManager
     keySpace: any;
     keyCtrl: any;
     keyZ: any;
+    keyW: any;
+    keyT: any;
     substackClearTimeout: NodeJS.Timeout;
     holdTimeoutFlag: boolean = false;
     public enabled: boolean = true;
@@ -736,7 +740,31 @@ class ControlManager
         this.keyZ = GameManager.gameScene?.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
         this.keyZ.on('down', this.handleCtrlZKey, this);
 
+        if (CHEATS_ENABLED)
+        {
+            this.keyW = GameManager.gameScene?.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+            this.keyW.on('down', this.handleWKey, this);
+
+            this.keyT = GameManager.gameScene?.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.T);
+            this.keyT.on('down', this.handleTKey, this);
+        }
+
         this.isClickEnabled = true; // Assuming this is defined somewhere in your class
+    }
+    handleWKey()
+    {
+        if (!CHEATS_ENABLED) return;
+        if (this.activeCard) return;
+        if (!this.enabled) return;
+        this.pileManager.gameManager.winGame();
+    }
+    handleTKey()
+    {
+        if (!CHEATS_ENABLED) return;
+        if (this.activeCard) return;
+        if (!this.enabled) return;
+        const enabled = this.pileManager.toggleSuperMode();
+        console.log(`Spider supermode ${enabled ? 'enabled' : 'disabled'}`);
     }
     handleHKey(arg0: string, handleHKey: any, arg2: this)
     {

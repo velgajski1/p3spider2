@@ -241,12 +241,7 @@ export class GameManager
 
         if (!this.gameOverFlag && this.pileManager.getTableauPiles().every(pile => pile.length == 0) && this.pileManager.allCardsUncovered() && this.pileManager.getStockPile().length == 0)
         {
-            this.gameScene.scene.launch("WonScene", { score: this.getCurrentScore(), timeplayed: this.getElapsedTime(), timebonus: this.getTimeBonus(), totalscore: this.getTotalScore() }).bringToTop("WonScene");
-            this.controlManager.disableControls()
-            this.gameOverFlag = true
-
-            const undoManager = UndoManager.getInstance();
-            undoManager.disableUndo()
+            this.winGame();
         }
 
 
@@ -254,6 +249,19 @@ export class GameManager
 
 
     }
+
+    winGame(): void
+    {
+        if (this.gameOverFlag) return;
+
+        this.gameScene.scene.launch("WonScene", { score: this.getCurrentScore(), timeplayed: this.getElapsedTime(), timebonus: this.getTimeBonus(), totalscore: this.getTotalScore() }).bringToTop("WonScene");
+        this.controlManager.disableControls()
+        this.gameOverFlag = true
+
+        const undoManager = UndoManager.getInstance();
+        undoManager.disableUndo()
+    }
+
     getTotalScore()
     {
         return this.getCurrentScore() + this.getTimeBonus();

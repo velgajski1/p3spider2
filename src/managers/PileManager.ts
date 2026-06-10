@@ -54,6 +54,7 @@ export default class PileManager
     cardTransitionManager: CardTransitionManager;
     static foldYDelta: number = 1;
     distributeDisabled: boolean = false;
+    public superModeActive: boolean = false;
 
     constructor(gameplayContainer: Phaser.GameObjects.Container, gameManager: GameManager)
     {
@@ -93,6 +94,11 @@ export default class PileManager
     {
         const substack = this.getSubstack(card);
 
+        if (this.superModeActive)
+        {
+            return substack.every(c => c.isFaceUp || c.isBeingFlipped);
+        }
+
         for (let i = 1; i < substack.length; i++)
         {
             const current = substack[i];
@@ -107,6 +113,12 @@ export default class PileManager
             }
         }
         return true;
+    }
+
+    public toggleSuperMode(): boolean
+    {
+        this.superModeActive = !this.superModeActive;
+        return this.superModeActive;
     }
 
     public isValidSubstackAnyColor(card: Card): boolean
@@ -773,6 +785,11 @@ export default class PileManager
     // Check if a card can be placed in the target tableau pile according to spider rules
     public canMoveToTableauPile(card: Card, targetPile: Array<Card>): boolean
     {
+        if (this.superModeActive)
+        {
+            return true;
+        }
+
         if (targetPile.length === 0)
         {
             return true
