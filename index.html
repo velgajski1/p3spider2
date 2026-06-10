@@ -1,61 +1,49 @@
 <!doctype html>
-<html lang="en">
-
+<html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Spider Solitaire Game</title>
-    <link rel="icon" type="image/png" href="./favicon.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css">
-    <!-- ANALYTICS -->
-    <script defer src="./bundle.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Spider Solitär</title>
+<link rel="icon" type="image/png" href="./favicon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+<!-- ANALYTICS -->
+<script defer src="./bundle.min.js"></script>
 </head>
-
 <body>
-    <div id="app">
-        <div class="top-bar">
-            <div class="title"></div>
-            <div class="game-links"><a href="/all-games" class="game-link" target="_blank"><span>All Games</span></a> <a
-                    href="/blog" class="game-link" target="_blank"><span>Blog</span></a></div>
-        </div>
-        <div id="game-container"></div>
+<script>
+    // Apply the saved night-mode class to body BEFORE Phaser loads so the right CSS background
+    // shows from the first paint — no flash. Mirrors NIGHT_MODE_ACTIVE values in src/config/Config.ts.
+    (function () {
+        var classes = ['bg-light', 'bg-dark', 'bg-green'];
+        var raw = null;
+        try { raw = localStorage.getItem('solkost_spider_NIGHT_MODE_ACTIVE'); } catch (e) {}
+        var idx = 0;
+        if (raw !== null) {
+            try {
+                var parsed = JSON.parse(raw);
+                idx = typeof parsed === 'boolean' ? (parsed ? 1 : 0) : (parsed | 0);
+            } catch (e) {}
+        }
+        if (idx < 0 || idx >= classes.length) idx = 0;
+        document.body.classList.add(classes[idx]);
+    })();
+</script>
+<div id="app">
+  <div class="top-bar">
+    <div class="game-stats">
+      <span class="stat-score"></span>
+      <span class="stat-time"></span>
     </div>
-    <script>function adjustTitle() {
-            const titleElement = document.querySelector('.title');
-            if (window.innerWidth <= 750) {
-                titleElement.textContent = 'SOLITAIRE';
-            } else {
-                titleElement.textContent = 'FREESOLITAIRE.COM - SOLITAIRE';
-            }
-        }
-
-        function calculateTopBarPosition() {
-            const topBar = document.querySelector('.top-bar');
-            const topBarHeight = topBar.offsetHeight;
-            const viewportHeight = window.innerHeight;
-            const bottomPositionPercentage = (topBarHeight / viewportHeight) * 100;
-
-            window.topBarBottomPosition = bottomPositionPercentage * window.innerHeight / 100;
-        }
-
-        // Run on initial load and window resize
-        window.addEventListener('load', () => {
-            adjustTitle();
-            calculateTopBarPosition();
-        });
-        window.addEventListener('resize', () => {
-            adjustTitle();
-            calculateTopBarPosition();
-        });
-        function updateFunction() {
-
-            calculateTopBarPosition();
-            // Any additional logic you need to run
-        }
-
-        // Set up the interval to run the function every 5 milliseconds
-        const intervalId = setInterval(updateFunction, 5);</script>
+    <div class="brand">Spider Solitär</div>
+    <div class="game-links">
+      <a href="/spider" class="game-link game-link-optional"><span>Spider</span></a>
+      <a href="/freecell" class="game-link game-link-optional"><span>Freecell</span></a>
+      <a href="/solitaire" class="game-link"><span>Solitaire</span></a>
+      <a href="/mahjong" class="game-link"><span>Mahjong</span></a>
+    </div>
+  </div>
+  <div id="game-container"></div>
+</div>
 </body>
-
 </html>

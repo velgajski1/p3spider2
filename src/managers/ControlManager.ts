@@ -230,7 +230,6 @@ class ControlManager
             } else if (this.activeCard && this.isClickEnabled)
             {
                 this.handleClick(this.activeCard);
-                if (SOUND_ACTIVE) SoundManager.instance.grabCard.play();
             }
         }
     };
@@ -262,7 +261,6 @@ class ControlManager
                 if (!this.dragging && movedDistance > CARD_MOVE_BEFORE_DRAG_ACTIVE)
                 {
 
-                    if (SOUND_ACTIVE) SoundManager.instance.grabCard.play();
                     this.dragging = true;
                     setDragActive(this.dragging);
                     let delta = 100000 + this.cardsDragged++;

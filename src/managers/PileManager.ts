@@ -185,9 +185,6 @@ export default class PileManager
             this.distributeDisabled = false;
         }, DISABLE_STOCK_DISTRIBUTION);
 
-        SOUND_ACTIVE && SoundManager.instance.dealMultiple.setVolume(0.75)
-
-        SOUND_ACTIVE && SoundManager.instance.dealMultiple.play()
         // Loop through each tableau pile with a delay for each card
         for (let i = 0; i < 10; i++)
         {
@@ -740,7 +737,8 @@ export default class PileManager
         let renderHeight = GameManager.rendererHeight
 
         if (GameManager.isMobile && GameManager.isPotrait) renderHeight *= 0.70;
-        if (GameManager.isMobile && !GameManager.isPotrait) renderHeight *= 0.9;
+        if (GameManager.isMobile && !GameManager.isPotrait) renderHeight *= 0.94; // mobile/tablet landscape: toolbar is on the side, more bottom space available
+        if (!GameManager.isMobile) renderHeight *= 0.875; // desktop: reserve ~12.5% bottom margin so the fold fires above the bottom toolbar
         let x = (renderHeight - GameManager.gameplayContainerY - GameManager.gameplayContainerScale * height);
 
 
@@ -971,6 +969,8 @@ export default class PileManager
 
                 if (foundationIndex !== -1)
                 {
+                    SOUND_ACTIVE && SoundManager.instance.clearSequence.play()
+
                     // Move each card in the completed sequence to the foundation
                     lastCards.forEach(card =>
                     {

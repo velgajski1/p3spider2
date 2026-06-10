@@ -64,46 +64,31 @@ class CardNameManager {
     }
 
     // Load card data and populate the cardNames array
+    // Expects new naming: c2..c10, ca, cj, cq, ck (and d/h/s variants). Backside is card-back.png.
     public loadCardData(frames: any[]): void {
+        const suitMap: { [key: string]: Suit } = {
+            c: Suit.Clubs, d: Suit.Diamonds, h: Suit.Hearts, s: Suit.Spades,
+        };
+        const rankMap: { [key: string]: Rank } = {
+            '2': Rank.Two, '3': Rank.Three, '4': Rank.Four, '5': Rank.Five,
+            '6': Rank.Six, '7': Rank.Seven, '8': Rank.Eight, '9': Rank.Nine,
+            '10': Rank.Ten, 'a': Rank.Ace, 'j': Rank.Jack, 'q': Rank.Queen, 'k': Rank.King,
+        };
+
         frames.forEach((frame) => {
-            const match = frame.filename.match(/cards\/(\w+)_(\w+)\.png/);
-
-            if (match) {
-                const [_, suitStr, rankStr] = match;
-            // Get Suit index from the enum
-            const suitKey = suitStr[0].toUpperCase() + suitStr.slice(1);
-
-            let suitIndex: number | undefined = undefined;
-
-            if (suitKey in Suit) {
-                suitIndex = Suit[suitKey as keyof typeof Suit] as number;
-            }
-
-            // Get Rank index from the enum
-            let rankKey = rankStr[0].toUpperCase() + rankStr.slice(1);
-         
-            let rankIndex: number | undefined = undefined;
-
-            // Check if the rank is a numeric string (2 to 10)
-            const numericRank = parseInt(rankKey, 10);
-            if (!isNaN(numericRank)) {
-                // Directly map numeric ranks (2 to 10)
-                rankIndex = numericRank - 2; // Zero-based index starting from 2
-            } else if (rankKey in Rank) {
-                // Directly map face card ranks and Ace using enum
-                rankIndex = Rank[rankKey as keyof typeof Rank] as number;
-            }
-            
-
+            const match = frame.filename.match(/^([cdhs])(10|[2-9]|[ajqk])\.png$/i);
+            if (!match) return;
+            const suitStr = match[1].toLowerCase();
+            const rankStr = match[2].toLowerCase();
+            const suitIndex = suitMap[suitStr];
+            const rankIndex = rankMap[rankStr];
             if (suitIndex !== undefined && rankIndex !== undefined) {
-                this.cardNames[suitIndex][rankIndex] = `${suitStr}_${rankStr}`;
-            }
-
+                this.cardNames[suitIndex][rankIndex] = `${suitStr}${rankStr}`;
             }
         });
     }
 
-    // Get a card name by suit and rank
+    // Get a card name by suit and rank, e.g. 'c10', 'ca', 'sj'.
     public getCardName(suit: Suit, rank: Rank): string {
         return this.cardNames[suit][rank];
     }

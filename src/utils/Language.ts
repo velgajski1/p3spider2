@@ -5,7 +5,7 @@ export class Language {
     static initLanguage(game: Phaser.Game) {
         const langXml = game.cache.xml.get('language');
         const urlParams = new URLSearchParams(window.location.search);
-        const languageStr = urlParams.get('lang')?.toUpperCase() || 'EN';
+        const languageStr = urlParams.get('lang')?.toUpperCase() || 'DE';
     
         // Type assertion added here for 'el' as Element
         const langElement = Array.from(langXml.getElementsByTagName('language') as NodeListOf<Element>).find((el: Element) => el.getAttribute('id')?.toUpperCase() === languageStr);

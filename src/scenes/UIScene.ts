@@ -3,63 +3,69 @@ import { LanguageConfig } from '../config/Language';
 import { GameManager } from '../managers/GameManager';
 import { translate } from '../utils/Language';
 import { formatTime } from '../utils/Utils';
-
+import SuitToggleSwitch from '../ui/SuitToggleSwitch';
 import Registry from '../config/Registry';
 import ImageButton from '../ui/ImageButton';
-import { DRAG_ACTIVE, getSuitMode, setSuitMode, SUIT_MODE } from '../config/Config';
-import CardLayoutManager from '../managers/CardLayoutManager';
-import UndoManager from '../managers/UndoManager';
-import { MainMenu } from './MainMenu';
+import ButtonWithColorBackground from '../ui/ButtonWithColorBackground';
+import { cycleNightMode, DRAG_ACTIVE, getSuitMode, NIGHT_MODE_ACTIVE, setSuitMode } from '../config/Config';
 import HintManager from '../managers/HintManager';
-import ControlManager from '../managers/ControlManager';
-import { SuitSelectionControl } from '../ui/SuitSelectionControl';
 
-export class UIScene extends Phaser.Scene
-{
+export class UIScene extends Phaser.Scene {
     textContainer: Phaser.GameObjects.Container;
-    textContainerDeltaX: number = 0;
     private scoreText: Phaser.GameObjects.Text;
     private timeText: Phaser.GameObjects.Text;
     private gameManager: GameManager; // Reference to the GameManager
     movesText: Phaser.GameObjects.Text;
     elementsContainer: Phaser.GameObjects.Container;
-    menuBut: ImageButton;
-    settingsBut: ImageButton;
-    hintBut: ImageButton;
-    undoBut: ImageButton;
-    inputEnabled: boolean = true;
-    skipClicks: boolean = false;
-    allInteractive: [ImageButton];
     elementsContainer2: GameObjects.Container;
     elementsContainer3: GameObjects.Container;
+    inputEnabled: boolean = true;
+    skipClicks: boolean = false;
+
+    private htmlScore: HTMLElement | null = null;
+    private htmlTime: HTMLElement | null = null;
+
+    desktopUI: {
+        toggle: SuitToggleSwitch;
+        neustart: ButtonWithColorBackground;
+        settings: ImageButton;
+        help: ImageButton;
+        stats: ImageButton;
+        night: ImageButton;
+        hint: ImageButton;
+        undo: ImageButton;
+    };
+    mobileUI: {
+        toggle: SuitToggleSwitch;
+        neustart: ButtonWithColorBackground;
+        settings: ImageButton;
+        help: ImageButton;
+        stats: ImageButton;
+        night: ImageButton;
+        hint: ImageButton;
+        undo: ImageButton;
+    };
 
 
     static myRef: UIScene;
-    restartBut: ImageButton;
 
-    constructor()
-    {
+    constructor() {
         super('UIScene');
         UIScene.myRef = this;
     }
 
 
 
-    create(): void
-    {
+    create(): void {
         // Create UI elements here
         this.textContainer = this.add.container(0, 0);
         this.elementsContainer = this.add.container(0, 0);
         this.elementsContainer2 = this.add.container(0, 0);
         this.elementsContainer3 = this.add.container(0, 0);
-        const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-            fontSize: '18px',
-            color: '#FFFFFF',
-            fontFamily: 'Open Sans',
-        };
-
-
         this.createTextElements();
+        this.textContainer.setVisible(false);
+        this.htmlScore = document.querySelector('.stat-score');
+        this.htmlTime = document.querySelector('.stat-time');
         this.createUIElements()
         this.createUIElementsMobile()
         this.gameManager = this.registry.get('gameManager');
@@ -70,226 +76,236 @@ export class UIScene extends Phaser.Scene
     }
     createUIElements()
     {
-        // Instantiate the ToggleSwitch
-        let deltaX = -460 + 5 - 1
+        this.desktopUI = {} as any;
 
-
-        const suitControl = new SuitSelectionControl(this, -111 + deltaX, 18, getSuitMode()); // Adjust position (x, y) as needed
-        this.elementsContainer.add(suitControl);
-
-        suitControl.events.on("suitSelected", (mode: number) =>
-        {
-
-
-            const gamemanager: GameManager = this.registry.get("gameManager");
-            gamemanager.updateStats();
-            setSuitMode(mode);
-            gamemanager.restart();
-
-        });
-
-
-        this.restartBut = new ImageButton(this, 100 + deltaX, 0, 'spider_restart', 'spider_restart', () =>
-        {
-
-            const state = UndoManager.getInstance().undoFully();
-
-            const gManager: GameManager = this.registry.get('gameManager');
-            gManager.reset()
-
-            if (state)
-            {
-                gManager.pileManager.setToGameState(state);
-            }
-            // this.remove();
-
-        })
-        this.elementsContainer.add(this.restartBut)
-        this.restartBut.setOrigin(0, 0);
-
-        this.menuBut = new ImageButton(this, 160 + deltaX, 0, 'menu', 'menu', () =>
-        {
-
-
+        // Centered horizontal toolbar. Order left→right: undo, hint, suit selector (1/2/4), night, stats, help, settings.
+        // 16px gaps everywhere, EXCEPT: the three suit segments are flush (110 stride), and selector→night is 36.
+        // Spans −551..551 (klondike rhythm, widened by the extra 110px segment).
+        this.desktopUI.undo = new ImageButton(this, -551, 0, 'btn-undo', 'btn-undo-hover', () => {
             if (!this.inputEnabled || this.skipClicks) return;
-            if (this.scene.getIndex('MainMenu') > -1)
-            {
-                this.scene.launch("MainMenu").bringToTop("MainMenu");
-            }
-            else if (this.scene)
-            {
-                this.scene.start("MainMenu").bringToTop("MainMenu");
-            }
+            this.gameManager = this.registry.get("gameManager");
+            this.gameManager.controlManager.handleUKey();
+        });
+        this.desktopUI.undo.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.undo);
 
-            this.input.setDefaultCursor('default');
+        this.desktopUI.hint = new ImageButton(this, -315, 0, 'btn-hint', 'btn-hint-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            const gamemanager: GameManager = this.registry.get('gameManager');
+            HintManager.getInstance().getHint(gamemanager.pileManager);
+        });
+        this.desktopUI.hint.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.hint);
 
-        })
-        this.elementsContainer.add(this.menuBut)
-        this.menuBut.setOrigin(0, 0);
+        this.desktopUI.toggle = new SuitToggleSwitch(
+            this,
+            -79,
+            0,
+            [
+                { mode: 1, offTexture: 'btn-spider-1-card-off', onTexture: 'btn-spider-1-card-on' },
+                { mode: 2, offTexture: 'btn-spider-2-card-off', onTexture: 'btn-spider-2-card-on' },
+                { mode: 4, offTexture: 'btn-spider-4-card-off', onTexture: 'btn-spider-4-card-on' },
+            ],
+            110,
+            0,
+            (mode: number) => this.handleSuitModeSelect(mode),
+            getSuitMode()
+        );
+        this.elementsContainer.add(this.desktopUI.toggle);
 
-        this.settingsBut = new ImageButton(this, 220 + deltaX, 0, 'settings', 'settings', () =>
-        {
+        // NEUSTART occupies the same slot as the suit selector; visibility-swapped while a modal is open.
+        this.desktopUI.neustart = new ButtonWithColorBackground(this, 86, 27, '↺ ' + translate(LanguageConfig.Neustart), () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            const gm: GameManager = this.registry.get('gameManager');
+            gm.updateStats();
+            gm.restart();
+        }, {
+            color: 0x618b3c,
+            textColor: '#ffffff',
+            width: 330,
+            height: 54,
+            fontSize: '20px',
+            fontStyle: 'bold',
+            cornerRadius: 8,
+            parentContainer: this.elementsContainer,
+        });
+        this.desktopUI.neustart.setVisible(false);
+
+        this.desktopUI.night = new ImageButton(this, 287, 0, 'icon-night', 'icon-night-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.toggleNightMode();
+        });
+        this.desktopUI.night.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.night);
+
+        this.desktopUI.stats = new ImageButton(this, 357, 0, 'icon-stats', 'icon-stats-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.scene.launch("Statistics").bringToTop("Statistics");
+        });
+        this.desktopUI.stats.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.stats);
+
+        this.desktopUI.help = new ImageButton(this, 427, 0, 'icon-help', 'icon-help-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.openHelpAnchor();
+        });
+        this.desktopUI.help.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.help);
+
+        this.desktopUI.settings = new ImageButton(this, 497, 0, 'icon-settings', 'icon-settings-hover', () => {
             if (!this.inputEnabled || this.skipClicks) return;
             this.scene.launch("Settings").bringToTop("Settings");
             this.input.setDefaultCursor('default');
-        })
-        this.settingsBut.setDepth(50000)
-        this.elementsContainer.add(this.settingsBut)
-        this.settingsBut.setOrigin(0, 0);
-
-        this.hintBut = new ImageButton(this, 280 + deltaX, 0, 'hint', 'hint', () =>
-        {
-            if (!this.inputEnabled || this.skipClicks) return;
-            let gamemanager: GameManager = this.registry.get('gameManager')
-            HintManager.getInstance().getHint(gamemanager.pileManager)
-
-        })
-        this.hintBut.skipClickSound = true;
-        this.elementsContainer.add(this.hintBut)
-        this.hintBut.setOrigin(0, 0);
-
-        this.undoBut = new ImageButton(this, 360 + deltaX, 0, 'undo', 'undo', () =>
-        {
-            if (!this.inputEnabled || this.skipClicks) return;
-            this.gameManager = this.registry.get("gameManager")
-            this.gameManager.controlManager.handleUKey()
-        })
-        this.elementsContainer.add(this.undoBut)
-        this.undoBut.setOrigin(0, 0);
-        this.undoBut.skipClickSound = true
-
-
-
+        });
+        this.desktopUI.settings.setDepth(50000);
+        this.desktopUI.settings.setOrigin(0, 0);
+        this.elementsContainer.add(this.desktopUI.settings);
     }
 
-    createUIElementsMobile()
-    {
-        let deltaX = -80
-        let deltaXLeft = 20;
+    createUIElementsMobile() {
+        this.mobileUI = {} as any;
+        const colRightX = -80;
+        const colLeftX = 20;
 
+        // ec2: right cluster (suit selector + hint + undo) using mobile-* art
+        this.mobileUI.toggle = new SuitToggleSwitch(
+            this,
+            colRightX,
+            0,
+            [
+                { mode: 1, offTexture: 'mobile-spider-btn-1-card-off', onTexture: 'mobile-spider-btn-1-card-on' },
+                { mode: 2, offTexture: 'mobile-spider-btn-2-card-off', onTexture: 'mobile-spider-btn-2-card-on' },
+                { mode: 4, offTexture: 'mobile-spider-btn-4-card-off', onTexture: 'mobile-spider-btn-4-card-on' },
+            ],
+            0,
+            54,
+            (mode: number) => this.handleSuitModeSelect(mode),
+            getSuitMode()
+        );
+        this.elementsContainer2.add(this.mobileUI.toggle);
 
-
-
-        this.menuBut = new ImageButton(this, deltaXLeft, 0 + 6, 'menu', 'menu', () =>
-        {
-
-
+        // Mobile NEUSTART overlays the selector position (visibility-swapped when a modal is open)
+        this.mobileUI.neustart = new ButtonWithColorBackground(this, colRightX + 27, 81, '↺', () => {
             if (!this.inputEnabled || this.skipClicks) return;
-            if (this.scene.getIndex('MainMenu') > -1)
-            {
-                this.scene.launch("MainMenu").bringToTop("MainMenu");
-            }
-            else if (this.scene)
-            {
-                this.scene.start("MainMenu").bringToTop("MainMenu");
-            }
+            const gm: GameManager = this.registry.get('gameManager');
+            gm.updateStats();
+            gm.restart();
+        }, {
+            color: 0x618b3c,
+            textColor: '#ffffff',
+            width: 54,
+            height: 162,
+            fontSize: '28px',
+            fontStyle: 'bold',
+            cornerRadius: 8,
+            parentContainer: this.elementsContainer2,
+        });
+        this.mobileUI.neustart.setVisible(false);
 
-            this.input.setDefaultCursor('default');
-
-        })
-        this.elementsContainer3.add(this.menuBut)
-        this.menuBut.setOrigin(0, 0);
-
-        this.settingsBut = new ImageButton(this, deltaXLeft, 55 + 6, 'settings', 'settings', () =>
-        {
-
-
+        this.mobileUI.hint = new ImageButton(this, colRightX, 183, 'mobile-btn-hint', 'mobile-btn-hint', () => {
             if (!this.inputEnabled || this.skipClicks) return;
+            const gamemanager: GameManager = this.registry.get('gameManager');
+            HintManager.getInstance().getHint(gamemanager.pileManager);
+        });
+        this.mobileUI.hint.setOrigin(0, 0);
+        this.elementsContainer2.add(this.mobileUI.hint);
 
+        this.mobileUI.undo = new ImageButton(this, colRightX, 258, 'mobile-btn-undo', 'mobile-btn-undo', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.gameManager = this.registry.get("gameManager");
+            this.gameManager.controlManager.handleUKey();
+        });
+        this.mobileUI.undo.setOrigin(0, 0);
+        this.elementsContainer2.add(this.mobileUI.undo);
+
+        // ec3: left cluster (settings/help/stats/night) using icon-* art
+        this.mobileUI.settings = new ImageButton(this, colLeftX, 0, 'icon-settings', 'icon-settings-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
             this.scene.launch("Settings").bringToTop("Settings");
             this.input.setDefaultCursor('default');
-        })
-        this.settingsBut.setDepth(50000)
-        this.elementsContainer3.add(this.settingsBut)
-        this.settingsBut.setOrigin(0, 0);
-
-        this.hintBut = new ImageButton(this, deltaX, 0 + 6, 'hint', 'hint', () =>
-        {
-            if (!this.inputEnabled || this.skipClicks) return;
-            let gamemanager: GameManager = this.registry.get('gameManager')
-            HintManager.getInstance().getHint(gamemanager.pileManager)
-
-        })
-        this.hintBut.skipClickSound = true;
-        this.elementsContainer2.add(this.hintBut)
-        this.hintBut.setOrigin(0, 0);
-
-        this.undoBut = new ImageButton(this, deltaX, 55 + 6, 'undo', 'undo', () =>
-        {
-            if (!this.inputEnabled || this.skipClicks) return;
-            this.gameManager = this.registry.get("gameManager")
-            this.gameManager.controlManager.handleUKey()
-        })
-        this.elementsContainer2.add(this.undoBut)
-        this.undoBut.setOrigin(0, 0);
-        this.undoBut.skipClickSound = true
-
-        const suitControl = new SuitSelectionControl(this, deltaX + 32, 30, getSuitMode(), 0, 50); // Adjust position (x, y) as needed
-        // this.elementsContainer2.add(suitControl);
-
-        suitControl.events.on("suitSelected", (mode: number) =>
-        {
-
-
-            const gamemanager: GameManager = this.registry.get("gameManager");
-            gamemanager.updateStats();
-            setSuitMode(mode);
-            gamemanager.restart();
-
         });
+        this.mobileUI.settings.setDepth(50000);
+        this.mobileUI.settings.setOrigin(0, 0);
+        this.elementsContainer3.add(this.mobileUI.settings);
 
+        this.mobileUI.help = new ImageButton(this, colLeftX, 55, 'icon-help', 'icon-help-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.openHelpAnchor();
+        });
+        this.mobileUI.help.setOrigin(0, 0);
+        this.elementsContainer3.add(this.mobileUI.help);
 
-        this.elementsContainer2.visible = this.elementsContainer3.visible = false
+        this.mobileUI.stats = new ImageButton(this, colLeftX, 110, 'icon-stats', 'icon-stats-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.scene.launch("Statistics").bringToTop("Statistics");
+        });
+        this.mobileUI.stats.setOrigin(0, 0);
+        this.elementsContainer3.add(this.mobileUI.stats);
 
+        this.mobileUI.night = new ImageButton(this, colLeftX, 165, 'icon-night', 'icon-night-hover', () => {
+            if (!this.inputEnabled || this.skipClicks) return;
+            this.toggleNightMode();
+        });
+        this.mobileUI.night.setOrigin(0, 0);
+        this.elementsContainer3.add(this.mobileUI.night);
+
+        this.elementsContainer2.visible = this.elementsContainer3.visible = false;
     }
 
-    update(time: number, delta: number): void
+    update(): void
     {
         this.elementsContainer3.visible = this.elementsContainer2.visible
         this.elementsContainer3.setScale(this.elementsContainer2.scale)
-        //
-        this.scoreText.text = "" + translate(LanguageConfig.Score) + this.gameManager.getCurrentScore()
-        this.timeText.text = " | " + translate(LanguageConfig.Time) + formatTime(this.gameManager.getElapsedTime())
-        // this.movesText.text = " | " + translate(LanguageConfig.Moves) + this.gameManager.getMoves()
+
+        const currentGameManager = this.registry.get('gameManager') as GameManager | undefined;
+        if (currentGameManager) {
+            this.gameManager = currentGameManager;
+        }
+        if (!this.gameManager) return;
+
+        const scoreStr = translate(LanguageConfig.Score) + this.gameManager.getCurrentScore();
+        const timeStr = formatTime(this.gameManager.getElapsedTime());
+        this.scoreText.text = scoreStr;
+        this.timeText.text = ' | ' + timeStr;
+        this.movesText.text = '';
+        if (!this.htmlScore || !this.htmlScore.isConnected) this.htmlScore = document.querySelector('.stat-score');
+        if (!this.htmlTime || !this.htmlTime.isConnected) this.htmlTime = document.querySelector('.stat-time');
+        if (this.htmlScore) this.htmlScore.textContent = scoreStr;
+        if (this.htmlTime) this.htmlTime.textContent = '| ' + timeStr;
         this.updateTextPos()
 
         this.inputEnabled = true
 
-        if (DRAG_ACTIVE)
-        {
-            this.hintBut.disableInteractive()
-            this.menuBut.disableInteractive()
-            this.undoBut.disableInteractive()
-            this.settingsBut.disableInteractive()
+        const modalOpen = this.scene.isActive('Settings') || this.scene.isActive('Statistics') || this.scene.isActive('WonScene') || this.scene.isActive('NewGameConfirm') || this.scene.isActive('SystemNoticeScene');
+        if (modalOpen) this.inputEnabled = false;
 
-        } else
-        {
-            this.hintBut.setInteractive()
-            this.menuBut.setInteractive()
-            this.undoBut.setInteractive()
-            this.settingsBut.setInteractive()
+        const ui = this.elementsContainer.visible ? this.desktopUI : this.mobileUI;
+        const buttons: ImageButton[] = [ui.settings, ui.help, ui.stats, ui.night, ui.hint, ui.undo];
+        if (DRAG_ACTIVE) {
+            buttons.forEach(b => b.disableInteractive());
+            ui.toggle.icons.forEach(icon => icon.disableInteractive());
+        } else {
+            buttons.forEach(b => b.setInteractive());
+            ui.toggle.icons.forEach(icon => icon.setInteractive());
         }
-
-        if (this.scene.isActive("Settings") || this.scene.isActive("MainMenu") || this.scene.isActive("Statistics") || this.scene.isActive("WonScene")) this.inputEnabled = false
     }
 
-    private createTextElements(): void
-    {
+    private createTextElements(): void {
         // Text style
         const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
             fontSize: '19px',
             color: '#FFFFFF',
-            fontFamily: 'Open Sans',
+            fontFamily: 'Inter',
         };
 
         // Score text
-        this.scoreText = this.add.text(-350 + 385 - 3, 7, '', textStyle);
+        this.scoreText = this.add.text(-350+350, 7, '', textStyle);
 
         // Time text
-        this.timeText = this.add.text(-275 + 385 - 3, 7, '', textStyle);
+        this.timeText = this.add.text(-275+350, 7, '', textStyle);
 
         // Time text
-        this.movesText = this.add.text(-150 + 380, 7, '', textStyle);
+        this.movesText = this.add.text(-150+350, 7, '', textStyle);
 
         this.textContainer.add(this.scoreText)
         this.textContainer.add(this.timeText)
@@ -297,8 +313,7 @@ export class UIScene extends Phaser.Scene
 
     }
 
-    private resize(gameSize: Phaser.Structs.Size): void
-    {
+    private resize(gameSize: Phaser.Structs.Size): void {
 
         const { width, height } = gameSize;
 
@@ -306,11 +321,10 @@ export class UIScene extends Phaser.Scene
         let elementsStartX = Registry.uiElemStartX;
 
         this.textContainer.setPosition(textStartX, 0);
-        this.elementsContainer.setPosition(elementsStartX, 0);
         let scale = Math.min(1, Math.min(width / 1600, height / 900));
-        //
-        let fontsize = Math.max(6, Math.ceil(20 * Math.sqrt(scale)));
-        this.elementsContainer.x = elementsStartX;
+        let fontsize = Math.max(12, Math.ceil(20 * Math.sqrt(scale)));
+        // Desktop toolbar: centered horizontally
+        this.elementsContainer.x = width / 2;
         this.elementsContainer.setScale(scale)
 
         this.elementsContainer2.setPosition(elementsStartX, 0)
@@ -320,9 +334,9 @@ export class UIScene extends Phaser.Scene
 
 
         const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-            fontSize: fontsize + 'px',
+            fontSize: fontsize+'px',
             color: '#FFFFFF',
-            fontFamily: 'Open Sans',
+            fontFamily: 'Inter',
         };
 
         this.scoreText.setStyle(textStyle)
@@ -333,14 +347,11 @@ export class UIScene extends Phaser.Scene
 
 
 
-        if (this.game.device.os.android || this.game.device.os.iOS)
-        {
-            if (innerWidth > innerHeight)
-            {
+        if (this.game.device.os.android || this.game.device.os.iOS) {
+            if (innerWidth > innerHeight) {
                 GameManager.isPotrait = false;
                 this.handleMobileLandscape()
-            } else
-            {
+            } else {
                 GameManager.isPotrait = true;
                 this.handleMobilePortrait()
             }
@@ -349,18 +360,16 @@ export class UIScene extends Phaser.Scene
     }
     handleMobileLandscape()
     {
-
-        if (this.scale.isFullscreen || !this.isTablet() || (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape))
-        {
-
+        if(this.scale.isFullscreen || !this.isTablet() || (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape)) {
+            this.applyMobileLandscapeLayout();
 
             this.elementsContainer.scale *= 2
             this.elementsContainer2.scale *= 2
             this.textContainer.scale = 1.2
 
-
             this.elementsContainer.x = window.innerWidth
             this.elementsContainer2.x = window.innerWidth
+            this.elementsContainer3.x = 0
             this.textContainer.x = 10
             this.movesText.setFontSize(19)
             this.scoreText.setFontSize(19)
@@ -370,40 +379,73 @@ export class UIScene extends Phaser.Scene
             this.elementsContainer.visible = false;
             this.elementsContainer2.visible = true;
             this.elementsContainer3.visible = this.elementsContainer2.visible
-
-
-        } else
-        {
+        } else {
             this.elementsContainer.visible = true;
             this.elementsContainer2.visible = false;
+            this.elementsContainer3.visible = false;
         }
-
     }
+
     handleMobilePortrait()
     {
+        this.applyMobilePortraitLayout();
 
-        this.elementsContainer2.visible = false;
-        this.elementsContainer.visible = true;
+        this.elementsContainer.visible = false;
+        this.elementsContainer2.visible = true;
+        this.elementsContainer3.visible = true;
 
-        this.elementsContainer.scale *= 2.5;
-        // this.textContainer.scale *= 1.3
+        const scaleFactor = Math.min(2.0, window.innerWidth / 570);
+        this.elementsContainer2.scale = scaleFactor;
+        this.elementsContainer3.scale = scaleFactor;
+
         this.movesText.setFontSize(22)
         this.scoreText.setFontSize(22)
         this.timeText.setFontSize(22)
-
-        this.elementsContainer.x = window.innerWidth - 3
-        this.elementsContainer.y = window.innerHeight
+        this.textContainer.scale = 1.2;
         this.movesText.visible = false;
 
+        // ec3 (settings/help/stats/night) anchored at left, ec2 (selector/hint/undo) anchored at right
+        this.elementsContainer3.x = 10;
+        this.elementsContainer2.x = window.innerWidth - 294 * scaleFactor - 10;
     }
 
-    private calculateContainerHeightPercentage(screenHeight: number): void
+    private applyMobileLandscapeLayout()
     {
-        // Assuming original dimensions of the gameplay container (for example purposes)
-        // @ts-ignore
+        if (!this.mobileUI) return;
+        // ec3 left column (settings/help/stats/night at x=20, 75px stride)
+        this.mobileUI.settings.setXY(20, 0);
+        this.mobileUI.help.setXY(20, 75);
+        this.mobileUI.stats.setXY(20, 150);
+        this.mobileUI.night.setXY(20, 225);
+        // ec2 right column: suit segments flush (54 stride), then hint/undo on the 75px rhythm
+        this.mobileUI.toggle.setPosition(-80, 0);
+        this.mobileUI.toggle.icons[0].setPosition(0, 0);
+        this.mobileUI.toggle.icons[1].setPosition(0, 54);
+        this.mobileUI.toggle.icons[2].setPosition(0, 108);
+        this.mobileUI.hint.setXY(-80, 183);
+        this.mobileUI.undo.setXY(-80, 258);
+    }
 
-        // @ts-ignore
-        const originalContainerHeight = this.textContainer.y + window.topBarBottomPosition; // Adjust this to your container's original height
+    private applyMobilePortraitLayout()
+    {
+        if (!this.mobileUI) return;
+        // ec3 row: 4 square icons horizontal (0, 60, 120, 180)
+        this.mobileUI.settings.setXY(0, 0);
+        this.mobileUI.help.setXY(60, 0);
+        this.mobileUI.stats.setXY(120, 0);
+        this.mobileUI.night.setXY(180, 0);
+        // ec2 row: suit segments flush side-by-side (0, 54, 108), hint at 180, undo at 240
+        this.mobileUI.toggle.setPosition(0, 0);
+        this.mobileUI.toggle.icons[0].setPosition(0, 0);
+        this.mobileUI.toggle.icons[1].setPosition(54, 0);
+        this.mobileUI.toggle.icons[2].setPosition(108, 0);
+        this.mobileUI.hint.setXY(180, 0);
+        this.mobileUI.undo.setXY(240, 0);
+    }
+
+    private calculateContainerHeightPercentage(screenHeight: number): void {
+        const topBarHeight = (document.querySelector('.top-bar') as HTMLElement | null)?.offsetHeight ?? 44;
+        const originalContainerHeight = this.textContainer.y + topBarHeight;
 
         // Get the current scale applied to the container
         const currentScale = this.textContainer.scaleY;
@@ -415,144 +457,140 @@ export class UIScene extends Phaser.Scene
         // Calculate the percentage of the screen height taken by the container
         const heightPercentage = (scaledContainerHeight / screenHeight) * 100;
 
-        // Log the percentage
-
-        this.registry.set('topUiWidthPercentage', 1.5 * heightPercentage / 100)
+        this.registry.set('topUiWidthPercentage', 1.5*heightPercentage/100)
     }
-    updateTextPos()
-    {
+    updateTextPos(){
 
         this.timeText.x = this.scoreText.x + this.scoreText.width
         this.movesText.x = this.timeText.x + this.timeText.width
 
         let topUI = this.registry.get("topUiWidthPercentage");
-        if (topUI == undefined) topUI = 0.01;
+        if (topUI==undefined) topUI = 0.01;
 
 
 
+        // Desktop default: text at top, button toolbar at bottom. Mobile branches below override these.
+        this.textContainer.y = topUI*this.scale.height
+        this.elementsContainer.y = this.scale.height * 0.93 - 7
+        this.elementsContainer2.y = topUI*this.scale.height
+        this.elementsContainer3.y = topUI*this.scale.height
 
-        this.elementsContainer.y = topUI * this.scale.height
-        this.elementsContainer2.y = topUI * this.scale.height
-        this.elementsContainer3.y = topUI * this.scale.height
-        this.textContainer.y = topUI * this.scale.height
+        this.registry.set("uiBottomPx", this.textContainer.y + this.scoreText.height*1.5 - 23)
 
 
-        this.registry.set("uiBottomPx", this.elementsContainer.y + this.scoreText.height)
+        if ((this.scale.isGameLandscape && this.game.device.os.iOS && this.isTablet()) || this.registry.get("isFullscreen") || ( !this.game.device.os.desktop && !this.isTablet() && this.scale.isGameLandscape)) {
 
-        if ((this.scale.isGameLandscape && this.game.device.os.iOS && this.isTablet()) || this.registry.get("isFullscreen") || (!this.game.device.os.desktop && !this.isTablet() && this.scale.isGameLandscape))
-        {
-
-            this.elementsContainer.y = this.scale.height * 0.925
-            this.elementsContainer2.y = this.scale.height * 0.925
-            this.elementsContainer2.y = this.scale.height * 0.025
+            this.elementsContainer.y = this.scale.height *0.925
+            this.elementsContainer2.y = this.scale.height *0.925
+            this.elementsContainer2.y = this.scale.height *0.025
             this.textContainer.y = this.scale.height * 0.925
 
 
 
 
-
-            if (this.game.device.os.android || this.game.device.os.iOS)
-            {
-                this.elementsContainer.y = this.scale.height * 0.9
-                this.elementsContainer2.y = this.scale.height * 0.07
-                this.elementsContainer3.y = this.scale.height * 0.07
-                if (!this.game.device.os.desktop && !this.isTablet() && this.scale.isGameLandscape && !this.registry.get("isFullscreen"))
-                {
-                    this.elementsContainer2.y = this.scale.height * 0.09
-                    this.elementsContainer3.y = this.scale.height * 0.09
+            if (this.game.device.os.android || this.game.device.os.iOS) {
+                this.elementsContainer.y = this.scale.height *0.9
+                this.elementsContainer2.y = this.scale.height *0.17
+                this.elementsContainer3.y = this.scale.height *0.17
+                if (!this.game.device.os.desktop && !this.isTablet() && this.scale.isGameLandscape && !this.registry.get("isFullscreen")) {
+                    this.elementsContainer2.y = this.scale.height *0.19
+                    this.elementsContainer3.y = this.scale.height *0.19
                 }
                 this.textContainer.y = this.scale.height * 0.9
-                // this.textContainer.y = this.scale.height * 0.525
-                if (this.game.device.os.iPad)
-                {
+                if (this.game.device.os.iPad) {
                     this.textContainer.y = this.scale.height * 0.86
                 }
             }
         }
-        else
-        {
+        else {
+            this.textContainer.y = topUI*this.scale.height
 
-            var deltaHeight = 900 - this.scale.height;
+            if (this.game.device.os.android || this.game.device.os.iOS) {
 
-            let extraY = 0;
-            if (deltaHeight > 0 && !this.game.device.os.android && !this.game.device.os.iOS)
-            {
-                extraY = Math.sqrt(Math.sqrt(deltaHeight));
-            }
-            let textStartX = Registry.uiTextStartX;
-
-
-            this.textContainer.y = topUI * this.scale.height - extraY
-            this.textContainer.x = textStartX - 3 * extraY
-
-            if (this.game.device.os.android || this.game.device.os.iOS)
-            {
-                this.textContainer.y -= 5;
-                this.textContainer.y -= 3;
-                this.textContainer.x -= 7;
-
-                if (window.innerHeight / window.innerWidth > 1.4)
-                {
-                    this.textContainer.x -= 7;
-                    this.textContainer.y -= 3;
-
-                }
-
-                // this.textContainer.x = 10
-                // this.textContainer.x=10
-
-
-                if (!this.game.device.os.iPad)
-                {
-                    this.elementsContainer.y = this.scale.height * 0.86
+                if (!this.game.device.os.iPad) {
                     this.elementsContainer.y = window.innerHeight * 0.86
-
-                } else if (this.game.device.os.iPad && innerHeight > innerWidth)
-                {
-                    // this.textContainer.y = this.scale.height * 0.78
-                    // this.textContainer.x = this.scale.width * 0.3
-                    this.elementsContainer.y = this.scale.height * 0.89
-                    this.elementsContainer.y = window.innerHeight * 0.89
-
+                    this.elementsContainer2.y = window.innerHeight * 0.86
+                    this.elementsContainer3.y = window.innerHeight * 0.86
+                } else if (this.game.device.os.iPad && innerHeight > innerWidth) {
+                    this.elementsContainer.y = window.innerHeight * 0.86
+                    this.elementsContainer2.y = window.innerHeight * 0.86
+                    this.elementsContainer3.y = window.innerHeight * 0.86
                 }
-
-                // this.textContainer.y = this.scale.height * 0.78
-                // this.textContainer.x = this.scale.width * 0.3
-                this.elementsContainer.y = this.scale.height * 0.89
-                this.elementsContainer.y = window.innerHeight * 0.89
-
-
             }
         }
-
-        if (this.scale.isLandscape && !this.game.device.os.android && !this.game.device.os.iOS)
-        {
-            this.registry.set("uiBottomPx", this.elementsContainer.y + this.scoreText.height)
-        }
-
-
 
     }
 
 
-    private isTablet(): boolean
-    {
+    private isTablet(): boolean {
         // Tablets generally have an aspect ratio between 1 and 1.6
         const aspectRatio = window.innerWidth / window.innerHeight;
-        // Screen diagonal size in inches (e.g., diagonal of a 10.1" tablet)
-        // const screenDiagonalInches = Math.sqrt(window.innerWidth**2 + window.innerHeight**2) / window.devicePixelRatio;
 
-        // Typically, tablets have a screen size between 7 and 13 inches
         const isTabletAspectRatio = aspectRatio > 1 && aspectRatio < 1.6;
-        // const isTabletSize = screenDiagonalInches > 7 && screenDiagonalInches < 13;
-
-
 
         return isTabletAspectRatio && (this.game.device.os.android || this.game.device.os.iOS);
     }
 
-    public setTime(time: number): void
-    {
+    private handleSuitModeSelect(mode: number): void {
+        if (!this.inputEnabled || this.skipClicks) return;
+        const gm: GameManager = this.registry.get('gameManager');
 
+        // Snapshot the actual current mode so cancel always reverts the selector visual to where it
+        // was before the click — even when the click was on the already-active segment (no real flip).
+        const previousMode = getSuitMode();
+
+        const applyMode = () => {
+            gm.updateStats();
+            setSuitMode(mode);
+            gm.restart();
+        };
+
+        // Untouched game (no card clicked yet) — switch silently.
+        if (!gm || !gm.firstClickDone) {
+            applyMode();
+            return;
+        }
+
+        // Active game in progress — confirm before discarding.
+        this.scene.launch('NewGameConfirm', {
+            suitMode: mode,
+            onConfirm: () => applyMode(),
+            onCancel: () => {
+                // Revert both selectors' visuals; only one is visible, but keep them in sync.
+                this.desktopUI?.toggle?.setSelectedMode(previousMode);
+                this.mobileUI?.toggle?.setSelectedMode(previousMode);
+            },
+        }).bringToTop('NewGameConfirm');
+    }
+
+    private openHelpAnchor(): void {
+        // Try a manual local scroll first — fixes two issues:
+        //   1) Android Chrome (esp. Samsung WebView) sometimes ignores hash-only navigation
+        //      that originates from inside the Phaser canvas / fullscreen context.
+        //   2) Even on browsers that honor it, the hash stays in the URL after the first
+        //      click, so a repeat click is a no-op (browser thinks it's already there).
+        const target = document.getElementById('spielanleitung');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (window.location.hash) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            return;
+        }
+        // Fallback: anchor lives outside this document (embedded build on a host page).
+        // Clear an existing hash first so re-setting it fires a real hashchange even on
+        // a repeat click, then set it so the host page can react.
+        if (window.location.hash === '#spielanleitung') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        window.location.hash = '#spielanleitung';
+    }
+
+    private toggleNightMode(): void {
+        cycleNightMode();
+        // Background is rendered by CSS; just swap the body class.
+        const classes = ['bg-light', 'bg-dark', 'bg-green'];
+        document.body.classList.remove(...classes);
+        document.body.classList.add(classes[NIGHT_MODE_ACTIVE] || classes[0]);
     }
 }

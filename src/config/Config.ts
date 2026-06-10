@@ -1,8 +1,11 @@
+const STORAGE_PREFIX = 'solkost_spider_';
+const k = (key: string) => STORAGE_PREFIX + key;
+
 export var RIGHT_HANDED_MODE_ACTIVE: boolean;
 export var RIGHT_HANDED_MODE_IDX: number;
-export var AUTOFINISH_MODE_ACTIVE: boolean = true;
-export var SOUND_ACTIVE: boolean = true;
-export var BG_INDEX: number = 0;
+export var SOUND_ACTIVE: boolean = false;
+export var NIGHT_MODE_ACTIVE: number = 0; // 0=light wood, 1=dark wood, 2=solid green
+export const NIGHT_MODE_COUNT = 3;
 export var DRAG_ACTIVE: boolean = true;
 export var SUIT_MODE: number = 1;
 
@@ -10,16 +13,9 @@ export var SHOW_SYSTEM_NOTICE: boolean = true;
 
 export function loadDefaultSettings(isMobile: boolean = false)
 {
-
     if (RIGHT_HANDED_MODE_ACTIVE == undefined || RIGHT_HANDED_MODE_ACTIVE == null)
     {
-        if (isMobile)
-        {
-            RIGHT_HANDED_MODE_ACTIVE = false;
-        } else
-        {
-            RIGHT_HANDED_MODE_ACTIVE = false;
-        }
+        RIGHT_HANDED_MODE_ACTIVE = false;
         RIGHT_HANDED_MODE_IDX = RIGHT_HANDED_MODE_ACTIVE ? 1 : 0;
     }
 
@@ -35,7 +31,7 @@ export function setSuitMode(params: number)
     if ([1, 2, 4].includes(params)) // Ensure valid suit mode
     {
         SUIT_MODE = params;
-        localStorage.setItem('SUIT_MODE', JSON.stringify(params));
+        localStorage.setItem(k('SUIT_MODE'), JSON.stringify(params));
     }
 }
 
@@ -47,74 +43,63 @@ export function getSuitMode()
 // Load saved settings from localStorage
 export function loadSettings()
 {
-    const rightHandedMode = localStorage.getItem('RIGHT_HANDED_MODE_ACTIVE');
+    const rightHandedMode = localStorage.getItem(k('RIGHT_HANDED_MODE_ACTIVE'));
     if (rightHandedMode !== null)
     {
         RIGHT_HANDED_MODE_ACTIVE = JSON.parse(rightHandedMode);
     }
 
-    const rightHandedModeIdx = localStorage.getItem('RIGHT_HANDED_MODE_IDX');
+    const rightHandedModeIdx = localStorage.getItem(k('RIGHT_HANDED_MODE_IDX'));
     if (rightHandedModeIdx !== null)
     {
         RIGHT_HANDED_MODE_IDX = JSON.parse(rightHandedModeIdx);
     }
 
-    const autofinishMode = localStorage.getItem('AUTOFINISH_MODE_ACTIVE');
-    if (autofinishMode !== null)
-    {
-        AUTOFINISH_MODE_ACTIVE = JSON.parse(autofinishMode);
-    }
-
-    const soundActive = localStorage.getItem('SOUND_ACTIVE');
+    const soundActive = localStorage.getItem(k('SOUND_ACTIVE'));
     if (soundActive !== null)
     {
         SOUND_ACTIVE = JSON.parse(soundActive);
     }
 
-    const bgIndex = localStorage.getItem('BG_INDEX');
-    if (bgIndex !== null)
+    const nightMode = localStorage.getItem(k('NIGHT_MODE_ACTIVE'));
+    if (nightMode !== null)
     {
-        BG_INDEX = JSON.parse(bgIndex);
+        const parsed = JSON.parse(nightMode);
+        // legacy boolean → numeric (true→1, false→0)
+        NIGHT_MODE_ACTIVE = typeof parsed === 'boolean' ? (parsed ? 1 : 0) : parsed;
     }
 
-    const suitMode = localStorage.getItem('SUIT_MODE');
+    const suitMode = localStorage.getItem(k('SUIT_MODE'));
     if (suitMode !== null)
     {
         SUIT_MODE = JSON.parse(suitMode);
     }
 
-
-
-    // SUIT_MODE = 1;
-
-
+    const showSystemNotice = localStorage.getItem(k('SHOW_SYSTEM_NOTICE'));
+    if (showSystemNotice !== null)
+    {
+        SHOW_SYSTEM_NOTICE = JSON.parse(showSystemNotice);
+    }
 }
-
 
 export function toggleRightHandedActive(params: boolean)
 {
     RIGHT_HANDED_MODE_ACTIVE = params;
     RIGHT_HANDED_MODE_IDX = params ? 1 : 0;
-    localStorage.setItem('RIGHT_HANDED_MODE_ACTIVE', JSON.stringify(params));
-    localStorage.setItem('RIGHT_HANDED_MODE_IDX', JSON.stringify(RIGHT_HANDED_MODE_IDX));
-}
-
-export function toggleAutofinishActive(params: boolean)
-{
-    AUTOFINISH_MODE_ACTIVE = params;
-    localStorage.setItem('AUTOFINISH_MODE_ACTIVE', JSON.stringify(params));
+    localStorage.setItem(k('RIGHT_HANDED_MODE_ACTIVE'), JSON.stringify(params));
+    localStorage.setItem(k('RIGHT_HANDED_MODE_IDX'), JSON.stringify(RIGHT_HANDED_MODE_IDX));
 }
 
 export function toggleSoundActive(params: boolean)
 {
     SOUND_ACTIVE = params;
-    localStorage.setItem('SOUND_ACTIVE', JSON.stringify(params));
+    localStorage.setItem(k('SOUND_ACTIVE'), JSON.stringify(params));
 }
 
-export function setBgIdx(params: number)
+export function cycleNightMode()
 {
-    BG_INDEX = params;
-    localStorage.setItem('BG_INDEX', JSON.stringify(params));
+    NIGHT_MODE_ACTIVE = (NIGHT_MODE_ACTIVE + 1) % NIGHT_MODE_COUNT;
+    localStorage.setItem(k('NIGHT_MODE_ACTIVE'), JSON.stringify(NIGHT_MODE_ACTIVE));
 }
 
 export function setDragActive(val: boolean)
@@ -122,12 +107,8 @@ export function setDragActive(val: boolean)
     DRAG_ACTIVE = val;
 }
 
-export function getBGINDEX()
-{
-    return BG_INDEX
-}
-
 export function setShowSytemNotice(val: boolean)
 {
     SHOW_SYSTEM_NOTICE = val;
+    localStorage.setItem(k('SHOW_SYSTEM_NOTICE'), JSON.stringify(val));
 }

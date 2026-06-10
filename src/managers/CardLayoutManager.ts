@@ -1,6 +1,6 @@
 // CardLayoutManager.ts
 import { RIGHT_HANDED_MODE_ACTIVE, RIGHT_HANDED_MODE_IDX } from "../config/Config";
-import { FOUNDATION_COORDS_DELTA, FOUNDATION_COORDS_INIT, getCardScale, HINT_OVERLAY_DURATION, STOCK_COORDS, STOCK_COORDS_DELTA_X, STOCK_FOUNDATION_SCALE, TAB_DELTA_Y_MOBILE_EXTRA, TABLEU_COORDS_DELTA, TABLEU_COORDS_INIT } from "../config/Consts";
+import { FOUNDATION_COORDS_DELTA, FOUNDATION_COORDS_INIT, getCardScale, HINT_ALPHA, HINT_ALPHA_FOUNDATION_EMPTY, HINT_OVERLAY_DURATION, STOCK_COORDS, STOCK_COORDS_DELTA_X, STOCK_FOUNDATION_SCALE, TAB_DELTA_Y_MOBILE_EXTRA, TABLEU_COORDS_DELTA, TABLEU_COORDS_INIT } from "../config/Consts";
 import Card from "../elements/Card";
 import { Rank } from "./CardNameManager";
 import { GameManager } from "./GameManager";
@@ -171,7 +171,7 @@ class CardLayoutManager
             const y = FOUNDATION_COORDS_INIT.y;
 
             // Create a sprite for the foundation indicator
-            const foundationIndicator = scene.add.sprite(x, y, 'holder_foundation_cards');
+            const foundationIndicator = scene.add.sprite(x, y, 'placeholders', 'foundation-empty.png');
             foundationIndicator.setDepth(9000); // Ensure the indicator is below cards
             cont.add(foundationIndicator);
 
@@ -186,11 +186,11 @@ class CardLayoutManager
     }
 
 
-    addHintOutline(scene: Phaser.Scene, sprite: Phaser.GameObjects.Sprite, deltaX: number = 0, deltaY: number = 0, alpha = 0.2, width = 178, height = 251)
+    addHintOutline(scene: Phaser.Scene, sprite: Phaser.GameObjects.Sprite, deltaX: number = 0, deltaY: number = 0, alpha = HINT_ALPHA, frame: string = 'card-hint-overlay.png')
     {
 
         this.removeHintOutline()
-        this.outline = scene.add.sprite(sprite.x, sprite.y, 'reddish_glow_outline').setScale(sprite.scale)
+        this.outline = scene.add.sprite(sprite.x, sprite.y, 'placeholders', frame).setScale(sprite.scale)
         scene.add.existing(this.outline)
         this.outline.setDepth(100000)
         sprite.parentContainer.add(this.outline)
@@ -225,7 +225,7 @@ class CardLayoutManager
     hintTabIdx(idx: number)
     {
         let spr = this.tabIndicators[idx]
-        this.addHintOutline(spr.scene, spr);
+        this.addHintOutline(spr.scene, spr, 0, 0, HINT_ALPHA_FOUNDATION_EMPTY, 'card-hint-overlay-on-wood.png');
     }
 
     hintFoundIdx(idx: number)
@@ -238,7 +238,7 @@ class CardLayoutManager
         } else
         {
             let spr = this.foundIndicators[idx]
-            this.addHintOutline(spr.scene, spr, 0, 0, 0.2, 181, 254);
+            this.addHintOutline(spr.scene, spr, 0, 0, HINT_ALPHA_FOUNDATION_EMPTY, 'card-hint-overlay-on-wood.png');
         }
 
 
@@ -254,10 +254,10 @@ class CardLayoutManager
         if (stockPileLen > 0)
         {
 
-            this.addHintOutline(spr.scene, spr, 0, 0, 0.3);
+            this.addHintOutline(spr.scene, spr, 0, 0, HINT_ALPHA);
         } else
         {
-            this.addHintOutline(spr.scene, spr, 0, 0, 0.2);
+            this.addHintOutline(spr.scene, spr, 0, 0, HINT_ALPHA_FOUNDATION_EMPTY, 'card-hint-overlay-on-wood.png');
         }
 
     }
@@ -273,7 +273,7 @@ class CardLayoutManager
             const y = TABLEU_COORDS_INIT.y;
 
             // Create a sprite for the foundation indicator
-            const tabIndicator = scene.add.sprite(x, y, 'holder_tableau_cards'); //
+            const tabIndicator = scene.add.sprite(x, y, 'placeholders', 'tableau-empty.png');
             tabIndicator.setDepth(-100); // Ensure the indicator is below cards
             cont.add(tabIndicator);
             // Optionally, customize the indicator with scale or tint

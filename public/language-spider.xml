@@ -1,0 +1,56 @@
+<languages>
+    <language id="DE">
+        <NewGame>Neues Spiel starten</NewGame>
+        <Neustart>Neustart</Neustart>
+
+        <Stats1>Statistiken (1 Karte)</Stats1>
+        <Stats2>Statistiken (2 Karten)</Stats2>
+        <Stats4>Statistiken (4 Karten)</Stats4>
+        <Spielen>Spielen</Spielen>
+        <Leistung>Leistung</Leistung>
+        <GamesPlayed>Gespielte Spiele</GamesPlayed>
+        <GamesWon>Gewonnene Spiele</GamesWon>
+        <WinPercentage>Gewinnquote</WinPercentage>
+        <TopScore>Höchste Punktzahl</TopScore>
+        <BestTime>Beste Zeit</BestTime>
+        <ResetStats>Statistiken zurücksetzen</ResetStats>
+
+        <Settings>Spieloptionen</Settings>
+        <SoundOnOff>Ton</SoundOnOff>
+        <RightHanded>Rechtshänder-Modus</RightHanded>
+        <SaveExit>Schließen</SaveExit>
+
+        <Score>Punkte: </Score>
+        <ScoreWon>Punkte</ScoreWon>
+        <Time>Zeit</Time>
+        <BestScoreWon>Beste Punktzahl</BestScoreWon>
+
+        <ConfirmNewGameTitle>Neue Partie starten?</ConfirmNewGameTitle>
+        <ConfirmNewGameBody1>Neue Partie mit 1 Farbe spielen?</ConfirmNewGameBody1>
+        <ConfirmNewGameBody2>Neue Partie mit 2 Farben spielen?</ConfirmNewGameBody2>
+        <ConfirmNewGameBody4>Neue Partie mit 4 Farben spielen?</ConfirmNewGameBody4>
+        <ConfirmNewGameNote>Dein aktuelles Spiel wird beendet.</ConfirmNewGameNote>
+        <ConfirmNewGameBack>Zurück zum Spiel</ConfirmNewGameBack>
+        <ConfirmNewGameConfirm>Neue Partie starten</ConfirmNewGameConfirm>
+
+        <SystemNotice>Systemmeldung</SystemNotice>
+        <EveryColumnMustContain>Jede Spalte muss mindestens eine Karte enthalten, bevor Sie neue Karten vom Stapel austeilen können.</EveryColumnMustContain>
+        <OK>OK</OK>
+        <DontShowAgain>OK, nicht mehr anzeigen</DontShowAgain>
+
+        <WinTitle01>Spiel gewonnen!</WinTitle01>
+        <WinTitle02>Sehr gut gespielt!</WinTitle02>
+        <WinTitle03>Prima gemacht!</WinTitle03>
+        <WinTitle04>Gut gemacht!</WinTitle04>
+        <WinTitle05>Schön gelöst!</WinTitle05>
+        <WinTitle06>Klasse gespielt!</WinTitle06>
+        <WinTitle07>Runde gewonnen!</WinTitle07>
+        <WinTitle08>Geschafft!</WinTitle08>
+        <WinTitle09>Sie haben gewonnen!</WinTitle09>
+        <WinTitle10>Das war gut!</WinTitle10>
+        <WinTitle11>Toll gespielt!</WinTitle11>
+        <WinTitle12>Sehr schön!</WinTitle12>
+        <WinTitle13>Glückwunsch!</WinTitle13>
+        <WinTitle14>Erfolgreich beendet!</WinTitle14>
+    </language>
+</languages>

@@ -3,7 +3,7 @@ const xml2js = require('xml2js');
 const parser = new xml2js.Parser();
 const chokidar = require('chokidar');
 
-const xmlFilePath = './public/language_spider-solitaire.xml'; // Update this to your actual XML file path
+const xmlFilePath = './public/language-spider.xml'; // Update this to your actual XML file path
 const outputFilePath = './src/config/Language.ts'; // Update this to your desired output path
 
 // Function to read XML and generate TypeScript config

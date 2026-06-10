@@ -1,20 +1,18 @@
 import Phaser from 'phaser';
 import { GameManager } from '../managers/GameManager';
 import Registry from '../config/Registry';
-import Card from '../elements/Card';
-import { CardNameManager, Rank, Suit } from '../managers/CardNameManager';
-import { PileType, TABLEU_COORDS_DELTA } from '../config/Consts';
+import { TABLEU_COORDS_DELTA } from '../config/Consts';
 import BaseScene from './BaseScene';
 import { SoundManager } from '../managers/SoundManager';
-import { getBGINDEX, loadDefaultSettings, loadSettings } from '../config/Config';
 import { TimerManager } from '../managers/TimerManager';
-import { SuitSelectionControl } from '../ui/SuitSelectionControl';
 
 export class GameplayScene extends BaseScene
 {
     private gameplayContainer!: Phaser.GameObjects.Container;
     gameManager: GameManager;
     soundManager: SoundManager;
+    private orientationRecoveryTimers: ReturnType<typeof setTimeout>[] = [];
+    private orientationRecoveryHandler?: () => void;
 
     constructor()
     {
@@ -61,9 +59,54 @@ export class GameplayScene extends BaseScene
 
         SoundManager.init(this);
         SoundManager.instance.silence.play()
-        // SoundManager.instance.test.play()
 
+        this.wireOrientationRecovery();
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.teardownOrientationRecovery, this);
+        this.events.once(Phaser.Scenes.Events.DESTROY, this.teardownOrientationRecovery, this);
+    }
 
+    private wireOrientationRecovery(): void
+    {
+        // Mobile browsers can stabilize at intermediate viewport dimensions during
+        // rotation. Android Chrome also refuses fullscreen until the next user gesture,
+        // so the eventual fullscreenchange needs the same refresh/relayout path.
+        this.orientationRecoveryHandler = () =>
+        {
+            // Cancel any pending relayouts from a previous rotation so we don't pile up.
+            this.orientationRecoveryTimers.forEach(t => clearTimeout(t));
+            this.orientationRecoveryTimers = [];
+            [0, 100].forEach(ms =>
+            {
+                this.orientationRecoveryTimers.push(
+                    setTimeout(() => this.refreshScaleAndResize(), ms)
+                );
+            });
+        };
+        window.addEventListener('orientationchange', this.orientationRecoveryHandler);
+        window.addEventListener('resize', this.orientationRecoveryHandler);
+        document.addEventListener('fullscreenchange', this.orientationRecoveryHandler);
+        // Visual Viewport reports post-settle dimensions reliably on mobile browsers.
+        window.visualViewport?.addEventListener('resize', this.orientationRecoveryHandler);
+    }
+
+    private teardownOrientationRecovery(): void
+    {
+        if (this.orientationRecoveryHandler)
+        {
+            window.removeEventListener('orientationchange', this.orientationRecoveryHandler);
+            window.removeEventListener('resize', this.orientationRecoveryHandler);
+            document.removeEventListener('fullscreenchange', this.orientationRecoveryHandler);
+            window.visualViewport?.removeEventListener('resize', this.orientationRecoveryHandler);
+            this.orientationRecoveryHandler = undefined;
+        }
+        this.orientationRecoveryTimers.forEach(t => clearTimeout(t));
+        this.orientationRecoveryTimers = [];
+    }
+
+    private refreshScaleAndResize(): void
+    {
+        this.scale.refresh();
+        this.doResize(this.scale.gameSize as Phaser.Structs.Size);
     }
 
     private resize(gameSize: Phaser.Structs.Size): void

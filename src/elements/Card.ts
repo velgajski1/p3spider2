@@ -1,6 +1,6 @@
 // Card.ts
 import Phaser from 'phaser';
-import { HINT_OVERLAY_DURATION, PileType } from '../config/Consts';
+import { HINT_ALPHA, HINT_OVERLAY_DURATION, PileType } from '../config/Consts';
 import { CardNameManager, Rank, Suit } from '../managers/CardNameManager';
 import ControlManager from '../managers/ControlManager';
 import { getTweensForObject } from '../utils/Utils';
@@ -39,7 +39,7 @@ export default class Card extends Phaser.GameObjects.Sprite
 
         let faceTexture = CardNameManager.Instance.getCardName(suit, rank);
 
-        super(scene, x, y, 'cards', 'cards/backside.png');
+        super(scene, x, y, 'cards', 'card-back.png');
         if (isFaceUp)
         {
             this.setTexture2(faceTexture);
@@ -50,7 +50,7 @@ export default class Card extends Phaser.GameObjects.Sprite
 
 
         this.faceTexture = faceTexture;
-        this.backTexture = 'backside';
+        this.backTexture = 'card-back';
         this.isFaceUp = isFaceUp; // Initially, cards are face down
 
         // Add this card to the scene
@@ -302,7 +302,7 @@ export default class Card extends Phaser.GameObjects.Sprite
     addOutline(scene: Phaser.Scene, cropY: number): void
     {
         if (!scene) return;
-        this.outline = scene.add.sprite(this.x - 1, this.y - 1, 'reddish_glow_outline').setScale(this.scale)
+        this.outline = scene.add.sprite(this.x - 1, this.y - 1, 'placeholders', 'card-hint-overlay.png').setScale(this.scale)
         scene.add.existing(this.outline)
         if (this.pileType == PileType.Tableau)
         {
@@ -314,7 +314,7 @@ export default class Card extends Phaser.GameObjects.Sprite
         }
 
         this.parentContainer.add(this.outline)
-        this.outline.alpha = 0.3
+        this.outline.alpha = HINT_ALPHA
 
         //    if (cropY > 0) {
         //     this.outline.setCrop(0,0,this.outline.width, cropY/this.scale)
@@ -350,7 +350,7 @@ export default class Card extends Phaser.GameObjects.Sprite
 
     setTexture2(frame: string): this
     {
-        super.setTexture('cards', 'cards/' + frame + '.png')
+        super.setTexture('cards', frame + '.png')
         return this;
     }
 

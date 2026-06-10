@@ -56,9 +56,9 @@ class StatsManager
     private getModePrefix(): string
     {
         let prefix = SUIT_MODE;
-        if (prefix == 1) return "p3spider1suit_"
-        if (prefix == 2) return "p3spider2suit_"
-        if (prefix == 4) return "p3spider4suit_"
+        if (prefix == 1) return "solkost_spider_1suit_"
+        if (prefix == 2) return "solkost_spider_2suit_"
+        if (prefix == 4) return "solkost_spider_4suit_"
         return "";
     }
 

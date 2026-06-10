@@ -100,8 +100,8 @@ class CardTransitionManager
         card.setInteractive(false);
         // getTweensForObject(card.scene, card).forEach(x => x.complete());
 
-
-        SOUND_ACTIVE && SoundManager.instance.cardToFoundation.play()
+        // Sound: the sequence-clear plays a single clear-sequence.mp3 from PileManager
+        // instead of 13 overlapping card-to-foundation plays (one per card).
         // Create a tween to move the card visually to the foundation pile
         card.scene.tweens.add({
             targets: card,

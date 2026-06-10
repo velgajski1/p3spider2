@@ -13,7 +13,7 @@ export class BaseMenuScene extends Phaser.Scene {
         this.createModalBackground()
     }
 
-    update(time: number, delta: number): void {
+    update(): void {
         // Check if the scene is currently active
         this.isActive = this.scene.isActive(this.scene.key);
 
@@ -44,5 +44,19 @@ export class BaseMenuScene extends Phaser.Scene {
     remove() : void {
         // this.scene.setVisible(false)
         this.scene.sleep()
+    }
+
+    /**
+     * Desktop responsiveness — shrink prompts at narrower desktop widths.
+     * Mobile/tablet (Android/iOS) is left at 1 so existing mobile layouts stay untouched.
+     * At/above 1920px: 1.0. At/below 800px: 0.5. In between: linear ramp.
+     */
+    protected getResponsiveModalScale(): number {
+        const isMobile = this.game.device.os.android || this.game.device.os.iOS;
+        if (isMobile) return 1;
+        const w = window.innerWidth;
+        if (w >= 1920) return 1;
+        if (w <= 800) return 0.5;
+        return 0.5 + (w - 800) * (1 - 0.5) / (1920 - 800);
     }
 }

@@ -80,7 +80,7 @@ module.exports = {
                 { from: 'public/assets', to: 'assets' },
                 { from: 'public/favicon.png', to: 'favicon.png' },
                 { from: 'public/style.css', to: 'style.css' },
-                { from: 'public/language_spider-solitaire.xml', to: 'language_spider-solitaire.xml' }
+                { from: 'public/language-spider.xml', to: 'language-spider.xml' }
             ],
         }),
     ]

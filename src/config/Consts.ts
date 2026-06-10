@@ -1,26 +1,3 @@
-import { GameManager } from "../managers/GameManager";
-
-export const BACKGROUND_COLORS = [
-    '#417652',
-    '#367a37', '#37864f', '#226632', '#014001', '#3b403c',
-    '#3d444e', '#575759', '#7b5f4a', '#4d5e72', '#616d95',
-    '#42678e', '#2d5f80', '#3b7aa6', '#008080', '#2b8063',
-    '#428e7f', '#5a8495', '#8a8697', '#b1aeae'
-];
-
-// Define a new constant for stat labels
-export const STAT_LABELS = {
-    GamesPlayed: 'Games Played',
-    GamesWon: 'Games Won',
-    GamesLost: 'Games Lost',
-    WinPercentage: 'Win Percentage',
-    CurrentWinStreak: 'Current Win Streak',
-    LongestWinStreak: 'Longest Win Streak',
-    AverageTime: 'Avg. Time/Game',
-    TopScore: 'Top Score',
-    BestTime: 'Best Time',
-};
-
 export enum PileType
 {
     Tableau = 'Tableau',
@@ -67,5 +44,7 @@ export const TABLEU_FOLD_HEIGHT = 700;
 export const FOLD_PIXELS_RATE = 20;
 export const HINT_OVERLAY_DURATION = 600
 export const HINT_NEXT_OVERLAY_DELTA = 250;
+export const HINT_ALPHA = 0.25;
+export const HINT_ALPHA_FOUNDATION_EMPTY = 0.40; // wood-friendly hint variant (empty tableau/foundation)
 export const TAB_DELTA_Y_MOBILE_EXTRA = 15;
 export const STOCK_FOUNDATION_SCALE = 0.8;
