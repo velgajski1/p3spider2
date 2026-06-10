@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #000000;
+    font-family: 'Open Sans', sans-serif;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.title {
+    font-size: 18px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+
+    margin-left: 10px; 
+}
+
+.game-links {
+    display: flex;
+    align-items: center;
+    margin-right: 10px; 
+}
+
+.game-link {
+    color: white;
+    font-size: 17px;
+    font-family: 'Open Sans', sans-serif;
+    text-decoration: none; /* Remove underline from the whole link */
+    position: relative;
+    display: inline-block; /* Adjust display to align pseudo-element correctly */
+}
+
+.game-link span {
+    display: inline; /* Ensures inline behavior for spans */
+}
+
+.game-link:hover span {
+    text-decoration: underline; /* Apply underline on hover to span only */
+}
+
+.game-link:not(:last-child)::after {
+    content: '|';
+    color: white;
+    padding: 0 8px;
+    position: relative;
+    top: -3px; /* Optional: Adjust vertical alignment of separator if needed */
+}
+
+
+@media (max-width: 750px) {
+
+
+    .game-link:last-child {
+        display: inline; /* Ensure 'All Games' is always shown */
+    }
+}
