@@ -226,6 +226,12 @@ export default class PileManager
                     {
                         UndoManager.getInstance().saveState(this.getState());
 
+                        // Dealing added a card to every pile, but addCardToTableuPile never
+                        // recomputes the fold — re-fold all piles so tall columns compress
+                        // instead of overflowing the board (same pattern as a sequence clear).
+                        this.fixTableuYDeltaAll();
+                        this.cardLayoutManager.layoutTableauPiles(this.getTableauPiles(), true);
+
                         TimerManager.setTimer(COMPLETE_SEQUENCE_DELAY, () =>
                         {
                             // this.distributeDisabled = false;
