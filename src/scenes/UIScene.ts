@@ -111,6 +111,8 @@ export class UIScene extends Phaser.Scene {
             (mode: number) => this.handleSuitModeSelect(mode),
             getSuitMode()
         );
+        // Close the 1px seam between the NEU 2 and NEU 4 segments by nudging NEU 4 left.
+        this.desktopUI.toggle.icons[2].x -= 1;
         this.elementsContainer.add(this.desktopUI.toggle);
 
         // NEUSTART occupies the same slot as the suit selector; visibility-swapped while a modal is open.
@@ -438,7 +440,8 @@ export class UIScene extends Phaser.Scene {
         this.mobileUI.toggle.setPosition(0, 0);
         this.mobileUI.toggle.icons[0].setPosition(0, 0);
         this.mobileUI.toggle.icons[1].setPosition(54, 0);
-        this.mobileUI.toggle.icons[2].setPosition(108, 0);
+        // NEU 4 nudged 1px left to close the seam against NEU 2.
+        this.mobileUI.toggle.icons[2].setPosition(107, 0);
         this.mobileUI.hint.setXY(180, 0);
         this.mobileUI.undo.setXY(240, 0);
     }

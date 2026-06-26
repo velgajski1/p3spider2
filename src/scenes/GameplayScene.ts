@@ -172,7 +172,8 @@ export class GameplayScene extends BaseScene
 
             top += extraY;
 
-
+            // Raise the board to use the free space at the top (match the Klondike layout height).
+            top -= 45;
         }
 
 

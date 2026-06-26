@@ -192,6 +192,9 @@ export default class PileManager
 
         this.distributeDisabled = true;
 
+        // Play the deal sound once for the whole stock-to-tableau distribution.
+        SOUND_ACTIVE && SoundManager.instance.cardsToTableau.play();
+
         setTimeout(() =>
         {
             this.distributeDisabled = false;

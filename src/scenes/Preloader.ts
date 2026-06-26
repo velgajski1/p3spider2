@@ -171,6 +171,7 @@ export class Preloader extends Scene
         }
 
         this.load.audio('card_to_foundation', 'sounds/card-to-foundation.mp3');
+        this.load.audio('cards_to_tableau', 'sounds/cards-to-tableau.mp3');
         this.load.audio('clear_sequence', 'sounds/clear-sequence.mp3');
         this.load.audio('hint', 'sounds/hint.mp3');
         this.load.audio('invalid', 'sounds/invalid.mp3');

@@ -4,6 +4,7 @@ export class SoundManager
     private static _scene: Phaser.Scene;
 
     public cardToFoundation: Phaser.Sound.BaseSound;
+    public cardsToTableau: Phaser.Sound.BaseSound;
     public clearSequence: Phaser.Sound.BaseSound;
     public hint: Phaser.Sound.BaseSound;
     public invalid: Phaser.Sound.BaseSound;
@@ -38,6 +39,7 @@ export class SoundManager
     private loadSounds(): void
     {
         this.cardToFoundation = SoundManager._scene.sound.add('card_to_foundation');
+        this.cardsToTableau = SoundManager._scene.sound.add('cards_to_tableau');
         this.clearSequence = SoundManager._scene.sound.add('clear_sequence');
         this.hint = SoundManager._scene.sound.add('hint');
         this.invalid = SoundManager._scene.sound.add('invalid');
