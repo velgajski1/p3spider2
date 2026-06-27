@@ -11,6 +11,10 @@ export var SUIT_MODE: number = 1;
 
 export var SHOW_SYSTEM_NOTICE: boolean = true;
 
+// Dev/testing cheats. When true: W = instant win, T = supermode (move any card),
+// and dealing from stock ignores the "empty pile" rule + its prompt. Ship as false.
+export const CHEATS_ENABLED: boolean = false;
+
 export function loadDefaultSettings(isMobile: boolean = false)
 {
     if (RIGHT_HANDED_MODE_ACTIVE == undefined || RIGHT_HANDED_MODE_ACTIVE == null)

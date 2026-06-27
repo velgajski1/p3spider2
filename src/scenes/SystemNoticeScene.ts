@@ -41,9 +41,9 @@ export class SystemNoticeScene extends BaseMenuScene
 
   private createWhiteBackground(): void
   {
-    // 565 wide x 398 tall, top-left at (-282, -199)
+    // 565 wide x 407 tall, top-left at (-282, -199) (extra 9px white on the bottom)
     this.whiteBg = this.add.graphics({ fillStyle: { color: 0xf8f5f0, alpha: 1 } });
-    this.whiteBg.fillRect(-282, -199, 565, 398);
+    this.whiteBg.fillRect(-282, -199, 565, 407);
     this.menuContainer.add(this.whiteBg);
   }
 
@@ -59,7 +59,7 @@ export class SystemNoticeScene extends BaseMenuScene
     }).setOrigin(0.5, 0);
 
     // Main text
-    const mainText = this.add.text(0, -110, translate(LanguageConfig.EveryColumnMustContain), {
+    const mainText = this.add.text(0, -113, translate(LanguageConfig.EveryColumnMustContain), {
       fontFamily: 'Inter',
       fontSize: '26px',
       color: '#000000',
@@ -79,7 +79,7 @@ export class SystemNoticeScene extends BaseMenuScene
     this.okButton = new ButtonWithColorBackground(
       this,
       0,
-      30,
+      53,
       translate(LanguageConfig.OK),
       () =>
       {
@@ -87,7 +87,7 @@ export class SystemNoticeScene extends BaseMenuScene
         this.scene.stop('SystemNoticeScene');
       },
       {
-        color: 0x3d96a5,
+        color: 0x489495,
         textColor: '#ffffff',
         width: 417,
         height: 61,
@@ -102,7 +102,7 @@ export class SystemNoticeScene extends BaseMenuScene
     this.dontShowAgainButton = new ButtonWithColorBackground(
       this,
       0,
-      110,
+      134,
       translate(LanguageConfig.DontShowAgain),
       () =>
       {
@@ -111,7 +111,7 @@ export class SystemNoticeScene extends BaseMenuScene
         this.scene.stop('SystemNoticeScene');
       },
       {
-        color: 0x3d96a5,
+        color: 0x489495,
         textColor: '#ffffff',
         width: 417,
         height: 61,

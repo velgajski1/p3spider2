@@ -113,12 +113,11 @@ export class Statistics extends BaseMenuScene {
     }
 
     private createResetButton(): void {
-        // Green per the spider prompt sheet (klondike's reset is red — an intentional "bottom section" difference).
         new ButtonWithColorBackground(this, 0, 230, Language.getTranslation(LanguageConfig.ResetStats), () => {
             statsManager.resetStats();
             this.scene.restart();
         }, {
-            color: 0x618b3c,
+            color: 0xaa4c4d,
             textColor: '#ffffff',
             width: 417,
             height: 61,

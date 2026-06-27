@@ -1,4 +1,4 @@
-import { RIGHT_HANDED_MODE_ACTIVE, RIGHT_HANDED_MODE_IDX, setDragActive, SOUND_ACTIVE } from "../config/Config";
+import { CHEATS_ENABLED, RIGHT_HANDED_MODE_ACTIVE, RIGHT_HANDED_MODE_IDX, setDragActive, SOUND_ACTIVE } from "../config/Config";
 import { PileType, TABLEU_COORDS_INIT, TABLEU_COORDS_DELTA, CARD_MOVE_BEFORE_DRAG_ACTIVE, TABLEU_STACK_TWEEN_DURATION, DISABLE_CLICK_DURATION_NORMAL, DISABLE_CLICK_DURATION_STOCK, CARD_MOVE_BEFORE_DRAG_AND_DROP, COMPLETE_SEQUENCE_DELAY } from "../config/Consts";
 import Card from "../elements/Card";
 import { UIScene } from "../scenes/UIScene";
@@ -10,8 +10,6 @@ import PileManager from "./PileManager";
 import { SoundManager } from "./SoundManager";
 import { TimerManager } from "./TimerManager";
 import UndoManager from "./UndoManager";
-
-const CHEATS_ENABLED = false;
 
 class ControlManager
 {
@@ -47,6 +45,7 @@ class ControlManager
     keyZ: any;
     keyW: any;
     keyT: any;
+    keyP: any;
     substackClearTimeout: NodeJS.Timeout;
     holdTimeoutFlag: boolean = false;
     public enabled: boolean = true;
@@ -747,6 +746,9 @@ class ControlManager
 
             this.keyT = GameManager.gameScene?.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.T);
             this.keyT.on('down', this.handleTKey, this);
+
+            this.keyP = GameManager.gameScene?.input?.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+            this.keyP.on('down', this.handlePKey, this);
         }
 
         this.isClickEnabled = true; // Assuming this is defined somewhere in your class
@@ -765,6 +767,14 @@ class ControlManager
         if (!this.enabled) return;
         const enabled = this.pileManager.toggleSuperMode();
         console.log(`Spider supermode ${enabled ? 'enabled' : 'disabled'}`);
+    }
+    handlePKey()
+    {
+        // Cheat: pop the "can't deal — every column must contain a card" notice on demand for testing.
+        if (!CHEATS_ENABLED) return;
+        if (this.activeCard) return;
+        if (!this.enabled) return;
+        GameManager.gameScene.scene.launch("SystemNoticeScene").bringToTop("SystemNoticeScene");
     }
     handleHKey(arg0: string, handleHKey: any, arg2: this)
     {
