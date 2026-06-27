@@ -112,19 +112,19 @@ export class GameplayScene extends BaseScene
     private resize(gameSize: Phaser.Structs.Size): void
     {
         this.doResize(gameSize);
+        // Re-run after the viewport settles, reading the LATEST size from this.scale each time
+        // (not the stale gameSize from the initial event). Samsung S26 reports the rotation's
+        // intermediate dimensions first and settles a frame later; reusing that first gameSize
+        // locked in the wrong dims and displaced the layout (S23/tablets report correct dims up
+        // front, so they were unaffected). Matches the German Klondike build.
         setTimeout(() =>
         {
-            this.doResize(gameSize);
+            this.doResize(this.scale.gameSize as Phaser.Structs.Size);
         }, 10);
         setTimeout(() =>
         {
-            this.doResize(gameSize);
-        }, 100);
-        setTimeout(() =>
-        {
-            this.doResize(gameSize);
-        }, 1000);
-
+            this.doResize(this.scale.gameSize as Phaser.Structs.Size);
+        }, 90);
     }
 
     private isFirefox()
@@ -158,11 +158,10 @@ export class GameplayScene extends BaseScene
         } else
         {
             this.registry.set("isFullscreen", false);
-
-            if (this.scale.isFullscreen)
-            {
-                this.scale.stopFullscreen()
-            }
+            // NOTE: do NOT call this.scale.stopFullscreen() here. It only fired in mobile
+            // fullscreen + portrait, so every rotate-to-portrait exited fullscreen, and rotating
+            // repeatedly toggled fullscreen on/off mid-rotation — on the S26 that left the canvas
+            // mis-measured and pushed both scenes off-screen with no recovery. Klondike omits it.
         }
 
         if (this.game.device.os.desktop)
