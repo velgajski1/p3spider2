@@ -200,6 +200,23 @@ export class GameplayScene extends BaseScene
             this.gameplayContainer.setPosition(width / 2, 2.2 * top);
         }
 
+        // Mobile phone landscape: the board anchored at a fixed small top, and since the top row of
+        // cards is centered on its anchor (so it overhangs upward), it slid under the HTML top bar.
+        // Seat the anchor just below the live bar height so the board is always clear of the bar.
+        if (GameManager.isMobile && !this.isTablet() && this.scale.isGameLandscape)
+        {
+            const barH = (document.querySelector('.top-bar') as HTMLElement | null)?.offsetHeight ?? 44;
+            this.gameplayContainer.setPosition(width / 2, barH + 15);
+        }
+
+        // Mobile portrait: the board was anchored at uiBottomPx and sat too low. Pull it up to just
+        // below the live bar height so it hugs the top bar instead of floating low down the screen.
+        if (GameManager.isMobile && (this.scale.isPortrait || window.innerHeight > window.innerWidth))
+        {
+            const barH = (document.querySelector('.top-bar') as HTMLElement | null)?.offsetHeight ?? 36;
+            this.gameplayContainer.setPosition(width / 2, barH + 20);
+        }
+
         const adjustedStartX = (width / 2) + -554 * scale;
         Registry.uiTextStartX = adjustedStartX
         // Registry.uiElemStartX = adjustedStartX + 1500
