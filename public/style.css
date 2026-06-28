@@ -169,3 +169,20 @@ body.bg-green #app {
     .game-links { font-size: 12px; }
     .game-link:not(:last-child)::after { padding: 0 4px; }
 }
+
+/* Build/version marker, bottom-left corner. Non-interactive; readable on light + dark wood. */
+#version-tag {
+    position: fixed;
+    left: 6px;
+    bottom: 4px;
+    z-index: 10;
+    max-width: 96vw;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+}

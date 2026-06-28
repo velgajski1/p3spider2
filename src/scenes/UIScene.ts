@@ -7,7 +7,7 @@ import SuitToggleSwitch from '../ui/SuitToggleSwitch';
 import Registry from '../config/Registry';
 import ImageButton from '../ui/ImageButton';
 import ButtonWithColorBackground from '../ui/ButtonWithColorBackground';
-import { cycleNightMode, DRAG_ACTIVE, getSuitMode, NIGHT_MODE_ACTIVE, setSuitMode } from '../config/Config';
+import { cycleNightMode, DRAG_ACTIVE, getSuitMode, NIGHT_MODE_ACTIVE, setSuitMode, VERSION } from '../config/Config';
 import HintManager from '../managers/HintManager';
 
 export class UIScene extends Phaser.Scene {
@@ -258,6 +258,8 @@ export class UIScene extends Phaser.Scene {
     {
         this.elementsContainer3.visible = this.elementsContainer2.visible
         this.elementsContainer3.setScale(this.elementsContainer2.scale)
+
+        this.updateVersionTag();
 
         const currentGameManager = this.registry.get('gameManager') as GameManager | undefined;
         if (currentGameManager) {
@@ -520,6 +522,17 @@ export class UIScene extends Phaser.Scene {
                     this.textContainer.y = this.scale.height * 0.86
                 }
             }
+
+            // iPad landscape: align the side button-column tops with the top edge of the
+            // stock/foundation card row (Y published by GameplayScene's iPad board branch),
+            // overriding the height*0.17 set just above.
+            if (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape) {
+                const y = this.registry.get('ipadStockTopY');
+                if (typeof y === 'number') {
+                    this.elementsContainer2.y = y;
+                    this.elementsContainer3.y = y;
+                }
+            }
         }
         else {
             this.textContainer.y = topUI*this.scale.height
@@ -541,7 +554,24 @@ export class UIScene extends Phaser.Scene {
     }
 
 
+    // Debug: render the device-detection signals next to the version in the bottom-left tag, so
+    // the exact gate values (post Preloader override) are visible on-device. Remove before release.
+    private updateVersionTag(): void {
+        const el = document.getElementById('version-tag');
+        if (!el) return;
+        const os = this.game.device.os;
+        const b = (v: boolean) => v ? '1' : '0';
+        const macUA = /Macintosh|Mac OS X/.test(navigator.userAgent);
+        const s = `${VERSION}  iOS:${b(os.iOS)} iPad:${b(os.iPad)} and:${b(os.android)} desk:${b(os.desktop)} `
+            + `tab:${b(this.isTablet())} land:${b(this.scale.isGameLandscape)} | tp:${navigator.maxTouchPoints} `
+            + `plat:${navigator.platform} mac:${b(macUA)}`;
+        if (el.textContent !== s) el.textContent = s;
+    }
+
     private isTablet(): boolean {
+        // Any iPad is a tablet, regardless of aspect ratio (newer iPads are wider than 4:3 and
+        // Chrome's toolbar shrinks innerHeight, pushing the ratio past the 1.6 cutoff below).
+        if (this.game.device.os.iPad) return true;
         // Tablets generally have an aspect ratio between 1 and 1.6
         const aspectRatio = window.innerWidth / window.innerHeight;
 

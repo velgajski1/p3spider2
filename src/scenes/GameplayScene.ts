@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GameManager } from '../managers/GameManager';
 import Registry from '../config/Registry';
-import { TABLEU_COORDS_DELTA } from '../config/Consts';
+import { TABLEU_COORDS_DELTA, STOCK_COORDS, getCardScale, STOCK_FOUNDATION_SCALE } from '../config/Consts';
 import BaseScene from './BaseScene';
 import { SoundManager } from '../managers/SoundManager';
 import { TimerManager } from '../managers/TimerManager';
@@ -216,8 +216,15 @@ export class GameplayScene extends BaseScene
             const TABLEAU_LOCAL_W = 1055;  // tableau visual local width (10 piles, 106 stride, 100.8px card)
             const sWidth = CARD_AREA_FRAC * width / TABLEAU_LOCAL_W;
             const sHeight = 0.25 * height / (253 * 0.56); // card height <= ~25% of screen height
-            this.gameplayContainer.setScale(Math.min(sWidth, sHeight));
+            const S = Math.min(sWidth, sHeight);
+            this.gameplayContainer.setScale(S);
             this.gameplayContainer.setPosition(width / 2, 2.2 * top);
+
+            // Publish the on-screen Y of the top edge of the stock/foundation card row so the UIScene
+            // can align the side button columns' tops with it. Cards sit at local y=STOCK_COORDS.y,
+            // sprite-scaled by getCardScale()*STOCK_FOUNDATION_SCALE, centered origin.
+            const stockTopLocal = STOCK_COORDS.y - (253 * getCardScale() * STOCK_FOUNDATION_SCALE) / 2;
+            this.registry.set('ipadStockTopY', 2.2 * top + stockTopLocal * S);
         }
 
         // Mobile phone landscape: the board anchored at a fixed small top, and since the top row of

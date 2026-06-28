@@ -156,6 +156,18 @@ export class Preloader extends Scene
 
 
 
+        // iPadOS 13+ defaults Safari/Chrome to a desktop ("Macintosh") user-agent, so Phaser's
+        // UA-based device.os.iOS/iPad come back false and the iPad gets the desktop layout. A real
+        // Mac has no touch; a "Mac" reporting touch points is actually an iPad — correct the flags
+        // here (before anything reads them) so every iOS/iPad/!desktop layout branch fires.
+        if (navigator.maxTouchPoints > 1 && /Macintosh|Mac OS X/.test(navigator.userAgent))
+        {
+            const os = this.game.device.os as any;
+            os.iOS = true;
+            os.iPad = true;
+            os.desktop = false;
+        }
+
         const isMobile = this.game.device.os.android || this.game.device.os.iOS;
 
         GameManager.isMobile = isMobile;

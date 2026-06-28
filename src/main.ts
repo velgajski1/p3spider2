@@ -9,6 +9,7 @@ import { Statistics } from './scenes/Statistics';
 import { WonScene } from './scenes/WonScene';
 import { NewGameConfirmScene } from './scenes/NewGameConfirmScene';
 import { SystemNoticeScene } from './scenes/SystemNoticeScene';
+import { VERSION } from './config/Config';
 
 declare global {
     interface Window {
@@ -48,5 +49,9 @@ const config: Types.Core.GameConfig = {
 
 window.__spiderGame?.destroy(true);
 window.__spiderGame = new Game(config);
+
+// Show the build version in the bottom-left corner (sourced from the bundle).
+const versionEl = document.getElementById('version-tag');
+if (versionEl) versionEl.textContent = VERSION;
 
 export default window.__spiderGame;
