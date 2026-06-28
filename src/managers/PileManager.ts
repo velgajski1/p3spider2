@@ -960,7 +960,6 @@ export default class PileManager
             // If all checks pass, move the sequence to the foundation
             if (isCompleteSequence)
             {
-                console.log("complete exists")
                 complete = true;
             }
         });

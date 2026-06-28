@@ -645,7 +645,6 @@ class ControlManager
     {
         if (this.pileManager.doesCompleteSequenceExist())
         {
-            console.log("disable clicks and interaction")
             this.disableCardClicksTemporarily(500);
             const undoManager = UndoManager.getInstance();
             undoManager.disableUndo()
