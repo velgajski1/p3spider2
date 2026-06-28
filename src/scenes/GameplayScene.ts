@@ -13,6 +13,7 @@ export class GameplayScene extends BaseScene
     soundManager: SoundManager;
     private orientationRecoveryTimers: ReturnType<typeof setTimeout>[] = [];
     private orientationRecoveryHandler?: () => void;
+    private visibilityHandler?: () => void;
 
     constructor()
     {
@@ -82,11 +83,21 @@ export class GameplayScene extends BaseScene
                 );
             });
         };
+        // Returning to the app (tab switch, background -> foreground, bfcache restore) can leave
+        // iPad Chrome scrolled with the HTML top bar pushed off-screen and the game shifted up —
+        // run the same refresh/relayout path (which re-pins the scroll) when we become visible.
+        this.visibilityHandler = () =>
+        {
+            if (document.visibilityState === 'visible') this.orientationRecoveryHandler?.();
+        };
         window.addEventListener('orientationchange', this.orientationRecoveryHandler);
         window.addEventListener('resize', this.orientationRecoveryHandler);
         document.addEventListener('fullscreenchange', this.orientationRecoveryHandler);
         // Visual Viewport reports post-settle dimensions reliably on mobile browsers.
         window.visualViewport?.addEventListener('resize', this.orientationRecoveryHandler);
+        window.addEventListener('pageshow', this.orientationRecoveryHandler);
+        window.addEventListener('focus', this.orientationRecoveryHandler);
+        document.addEventListener('visibilitychange', this.visibilityHandler);
     }
 
     private teardownOrientationRecovery(): void
@@ -97,7 +108,14 @@ export class GameplayScene extends BaseScene
             window.removeEventListener('resize', this.orientationRecoveryHandler);
             document.removeEventListener('fullscreenchange', this.orientationRecoveryHandler);
             window.visualViewport?.removeEventListener('resize', this.orientationRecoveryHandler);
+            window.removeEventListener('pageshow', this.orientationRecoveryHandler);
+            window.removeEventListener('focus', this.orientationRecoveryHandler);
             this.orientationRecoveryHandler = undefined;
+        }
+        if (this.visibilityHandler)
+        {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = undefined;
         }
         this.orientationRecoveryTimers.forEach(t => clearTimeout(t));
         this.orientationRecoveryTimers = [];
@@ -105,6 +123,11 @@ export class GameplayScene extends BaseScene
 
     private refreshScaleAndResize(): void
     {
+        // iPad Chrome can return from the background with the page scrolled down, pushing the
+        // absolute HTML top bar off-screen and shifting the game up. Re-pin to the top first.
+        // The game never scrolls itself, and embedded it runs in an iframe, so this can't fight
+        // host-page scrolling (e.g. the help anchor).
+        if (this.game.device.os.iOS) window.scrollTo(0, 0);
         this.scale.refresh();
         this.doResize(this.scale.gameSize as Phaser.Structs.Size);
     }
