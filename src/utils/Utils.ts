@@ -18,6 +18,20 @@ export function formatTime(seconds: number, format: 'hh:mm:ss' | 'mm:ss' = 'mm:s
     }
 }
 
+// Whether to use the "tablet landscape" layout (board fills ~82% width, side button columns
+// edge-pinned, their tops aligned with the stock/foundation row). Applies to all iPads in
+// landscape, plus FULLSCREEN Android tablets in landscape — an Android UA WITHOUT "Mobile" is a
+// tablet, not a phone. Kept separate from isTablet() so we don't disturb the fullscreen-forcing
+// (isTablet() must stay false for Android tablets or the game stops forcing them fullscreen).
+export function useTabletLandscapeLayout(scene: Phaser.Scene): boolean
+{
+    if (!scene.scale.isGameLandscape) return false;
+    const os: any = scene.game.device.os;
+    if (os.iPad) return true;
+    if (os.android && scene.scale.isFullscreen && !/Mobile/i.test(navigator.userAgent)) return true;
+    return false;
+}
+
 export function getTweensForObject(scene: Phaser.Scene, target: Phaser.GameObjects.GameObject): Phaser.Tweens.Tween[]
 {
     if (scene)

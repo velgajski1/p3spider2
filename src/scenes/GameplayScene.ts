@@ -5,6 +5,7 @@ import { TABLEU_COORDS_DELTA, STOCK_COORDS, getCardScale, STOCK_FOUNDATION_SCALE
 import BaseScene from './BaseScene';
 import { SoundManager } from '../managers/SoundManager';
 import { TimerManager } from '../managers/TimerManager';
+import { useTabletLandscapeLayout } from '../utils/Utils';
 
 export class GameplayScene extends BaseScene
 {
@@ -206,9 +207,10 @@ export class GameplayScene extends BaseScene
         {
             this.gameplayContainer.setPosition(width / 2, top * 0.7);
         }
-        if (this.scale.isGameLandscape && this.game.device.os.iOS && this.isTablet())
+        if (useTabletLandscapeLayout(this))
         {
-            // iPad landscape: scale the board so the 10-pile tableau fills ~82% of screen width
+            // Tablet landscape (iPad, or fullscreen Android tablet): scale the board so the
+            // 10-pile tableau fills ~82% of screen width
             // (leaving room for the edge-pinned button columns), capped by height as a safety so
             // cards never get absurd on very short windows. The post-resize fixTableuYDeltaAll()
             // re-folds columns for the new scale, so tall columns still fit vertically.

@@ -2,7 +2,7 @@ import Phaser, { GameObjects } from 'phaser';
 import { LanguageConfig } from '../config/Language';
 import { GameManager } from '../managers/GameManager';
 import { translate } from '../utils/Language';
-import { formatTime } from '../utils/Utils';
+import { formatTime, useTabletLandscapeLayout } from '../utils/Utils';
 import SuitToggleSwitch from '../ui/SuitToggleSwitch';
 import Registry from '../config/Registry';
 import ImageButton from '../ui/ImageButton';
@@ -384,9 +384,9 @@ export class UIScene extends Phaser.Scene {
             this.elementsContainer2.visible = true;
             this.elementsContainer3.visible = this.elementsContainer2.visible
 
-            // iPad landscape: pin the two side button columns hard to the screen edges at ~5% width,
-            // so the board can take ~82% of the width. Overrides the x/scale set just above.
-            if (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape) {
+            // Tablet landscape: pin the two side button columns hard to the screen edges at ~5%
+            // width, so the board can take ~82% of the width. Overrides the x/scale set just above.
+            if (useTabletLandscapeLayout(this)) {
                 const EDGE_MARGIN_FRAC = 0.02; // 2% screen-edge margin
                 const BUTTON_WIDTH_FRAC = 0.05; // ~5% column width
                 const ICON_PX = 54; // native side-icon width
@@ -523,10 +523,10 @@ export class UIScene extends Phaser.Scene {
                 }
             }
 
-            // iPad landscape: align the side button-column tops with the top edge of the
-            // stock/foundation card row (Y published by GameplayScene's iPad board branch),
+            // Tablet landscape: align the side button-column tops with the top edge of the
+            // stock/foundation card row (Y published by GameplayScene's board branch),
             // overriding the height*0.17 set just above.
-            if (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape) {
+            if (useTabletLandscapeLayout(this)) {
                 const y = this.registry.get('ipadStockTopY');
                 if (typeof y === 'number') {
                     this.elementsContainer2.y = y;
@@ -562,9 +562,11 @@ export class UIScene extends Phaser.Scene {
         const os = this.game.device.os;
         const b = (v: boolean) => v ? '1' : '0';
         const macUA = /Macintosh|Mac OS X/.test(navigator.userAgent);
+        const mobUA = /Mobile/i.test(navigator.userAgent);
         const s = `${VERSION}  iOS:${b(os.iOS)} iPad:${b(os.iPad)} and:${b(os.android)} desk:${b(os.desktop)} `
-            + `tab:${b(this.isTablet())} land:${b(this.scale.isGameLandscape)} | tp:${navigator.maxTouchPoints} `
-            + `plat:${navigator.platform} mac:${b(macUA)}`;
+            + `tab:${b(this.isTablet())} land:${b(this.scale.isGameLandscape)} fs:${b(this.scale.isFullscreen)} `
+            + `tabLand:${b(useTabletLandscapeLayout(this))} | tp:${navigator.maxTouchPoints} `
+            + `plat:${navigator.platform} mac:${b(macUA)} mob:${b(mobUA)}`;
         if (el.textContent !== s) el.textContent = s;
     }
 

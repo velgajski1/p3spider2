@@ -3,7 +3,7 @@ const k = (key: string) => STORAGE_PREFIX + key;
 
 // Bump per release. Rendered in the bottom-left corner (from the bundle, so it reflects the
 // actually-loaded build — handy for confirming a fresh build vs a cached bundle.min.js).
-export const VERSION = 'v1.0.3';
+export const VERSION = 'v1.0.4';
 
 export var RIGHT_HANDED_MODE_ACTIVE: boolean;
 export var RIGHT_HANDED_MODE_IDX: number;
