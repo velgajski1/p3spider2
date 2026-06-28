@@ -127,11 +127,6 @@ export class GameplayScene extends BaseScene
         }, 90);
     }
 
-    private isFirefox()
-    {
-        return navigator.userAgent.toLowerCase().includes("firefox");
-    }
-
     private doResize(gameSize: Phaser.Structs.Size): void
     {
         const { width, height } = gameSize;
@@ -190,12 +185,15 @@ export class GameplayScene extends BaseScene
         }
         if (this.scale.isGameLandscape && this.game.device.os.iOS && this.isTablet())
         {
-
-            this.gameplayContainer.setScale(scale * 1.3);
-            if (this.isFirefox())
-            {
-                this.gameplayContainer.setScale(scale * 1.2);
-            }
+            // iPad landscape: scale the board so the 10-pile tableau fills ~82% of screen width
+            // (leaving room for the edge-pinned button columns), capped by height as a safety so
+            // cards never get absurd on very short windows. The post-resize fixTableuYDeltaAll()
+            // re-folds columns for the new scale, so tall columns still fit vertically.
+            const CARD_AREA_FRAC = 0.82;   // cards span ~9%..91% of width
+            const TABLEAU_LOCAL_W = 1055;  // tableau visual local width (10 piles, 106 stride, 100.8px card)
+            const sWidth = CARD_AREA_FRAC * width / TABLEAU_LOCAL_W;
+            const sHeight = 0.25 * height / (253 * 0.56); // card height <= ~25% of screen height
+            this.gameplayContainer.setScale(Math.min(sWidth, sHeight));
             this.gameplayContainer.setPosition(width / 2, 2.2 * top);
         }
 

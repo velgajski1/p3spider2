@@ -381,6 +381,22 @@ export class UIScene extends Phaser.Scene {
             this.elementsContainer.visible = false;
             this.elementsContainer2.visible = true;
             this.elementsContainer3.visible = this.elementsContainer2.visible
+
+            // iPad landscape: pin the two side button columns hard to the screen edges at ~5% width,
+            // so the board can take ~82% of the width. Overrides the x/scale set just above.
+            if (this.game.device.os.iOS && this.isTablet() && this.scale.isGameLandscape) {
+                const EDGE_MARGIN_FRAC = 0.02; // 2% screen-edge margin
+                const BUTTON_WIDTH_FRAC = 0.05; // ~5% column width
+                const ICON_PX = 54; // native side-icon width
+                const W = window.innerWidth;
+                const s = BUTTON_WIDTH_FRAC * W / ICON_PX;
+                this.elementsContainer2.setScale(s);
+                this.elementsContainer3.setScale(s); // update() also syncs ec3 <- ec2 each frame
+                // left column local icon x = 20  -> left icon edge at EDGE_MARGIN_FRAC*W
+                this.elementsContainer3.x = EDGE_MARGIN_FRAC * W - 20 * s;
+                // right cluster local icon x spans -80..-26 -> right icon edge at (1-EDGE_MARGIN_FRAC)*W
+                this.elementsContainer2.x = (1 - EDGE_MARGIN_FRAC) * W + 26 * s;
+            }
         } else {
             this.elementsContainer.visible = true;
             this.elementsContainer2.visible = false;
