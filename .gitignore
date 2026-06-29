@@ -13,4 +13,5 @@ node_modules/
 # Build
 dist/
 dist_final/
+version.json
 /npm-debug.log

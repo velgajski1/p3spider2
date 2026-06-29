@@ -259,7 +259,7 @@ export class UIScene extends Phaser.Scene {
         this.elementsContainer3.visible = this.elementsContainer2.visible
         this.elementsContainer3.setScale(this.elementsContainer2.scale)
 
-        this.updateVersionTag();
+        if (__DEV_BUILD__) this.updateVersionTag(); // dev/watch only; cut from the prod release bundle (build:prod)
 
         const currentGameManager = this.registry.get('gameManager') as GameManager | undefined;
         if (currentGameManager) {
@@ -557,6 +557,7 @@ export class UIScene extends Phaser.Scene {
     // Debug: render the device-detection signals next to the version in the bottom-left tag, so
     // the exact gate values (post Preloader override) are visible on-device. Remove before release.
     private updateVersionTag(): void {
+        if (!__DEV_BUILD__) return; // whole body is dead-code-eliminated from the prod release bundle
         const el = document.getElementById('version-tag');
         if (!el) return;
         const os = this.game.device.os;

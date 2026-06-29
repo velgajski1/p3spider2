@@ -4,7 +4,10 @@
     "main": "src/main.js",
     "scripts": {
         "dev": "concurrently \"webpack-dev-server --config webpack/config.dev.js --open\" \"node ./scripts/xmltoconfig.js\"",
+        "prebuild": "node scripts/bump-version.cjs",
         "build": "webpack --config webpack/config.prod.js",
+        "prebuild:prod": "node scripts/bump-version.cjs",
+        "build:prod": "webpack --config webpack/config.prod.js --env release",
         "upload": "node uploadBin.cjs",
         "watch": "nodemon -e ts,js --watch src --watch index.html --exec \"npm run build && npm run upload || exit 1 \""
     },

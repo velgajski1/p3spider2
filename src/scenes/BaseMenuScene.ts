@@ -59,4 +59,41 @@ export class BaseMenuScene extends Phaser.Scene {
         if (w <= 800) return 0.5;
         return 0.5 + (w - 800) * (1 - 0.5) / (1920 - 800);
     }
+
+    /**
+     * Position + scale a modal container so it never overlaps the HTML top bar. The container is SCALED
+     * to fit the area below the bar (so a tall prompt can't exceed that space or overflow the bottom),
+     * but POSITIONED at the true vertical centre when there's room — only pushed down far enough to clear
+     * the bar on small screens. So large screens sit at true centre; small screens tuck just below the
+     * bar. Reuses getResponsiveModalScale().
+     */
+    protected layoutModalContainer(
+        container: Phaser.GameObjects.Container,
+        gameSize: Phaser.Structs.Size | undefined,
+        scaleXDivider: number,
+        scaleYDivider: number,
+        yNudge: number = 0
+    ): void {
+        const { width, height } = gameSize || this.scale;
+        const barH = (document.querySelector('.top-bar') as HTMLElement | null)?.offsetHeight ?? 44;
+        const usableHeight = height - barH;
+
+        // Scale to fit the area BELOW the bar, so a tall prompt never exceeds the space under it
+        // (and so pushing it down to clear the bar can't overflow the bottom).
+        const scaleX = width / scaleXDivider;
+        const scaleY = usableHeight / scaleYDivider;
+        const scale = Math.min(1, Math.max(scaleX, scaleY));
+        const responsive = this.getResponsiveModalScale();
+        const finalScale = (scaleXDivider * scale > width || scaleYDivider * scale > usableHeight)
+            ? Math.min(scaleX, scaleY) * responsive
+            : scale * responsive;
+        container.setScale(finalScale);
+
+        // Prefer the true vertical centre (prompt sits higher when there's room); only push down far
+        // enough to clear the top bar on small screens. On height-constrained screens halfHeight equals
+        // usableHeight/2 — the snug "just below the bar" position; on large screens height/2 wins.
+        const halfHeight = (scaleYDivider / 2) * finalScale;
+        const centerY = Math.max(height / 2, barH + halfHeight) + yNudge;
+        container.setPosition(width / 2, centerY);
+    }
 }

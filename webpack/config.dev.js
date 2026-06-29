@@ -2,6 +2,11 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
+const fs = require("fs");
+
+// Build version (injected as __VERSION__). The dev-server reads whatever version.json currently holds.
+let VERSION = 'v0.0.0';
+try { VERSION = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'version.json'), 'utf8')).version || VERSION; } catch (e) {}
 
 module.exports = {
     mode: "development",
@@ -51,7 +56,9 @@ module.exports = {
             "typeof PLUGIN_3D": JSON.stringify(false),
             "typeof PLUGIN_CAMERA3D": JSON.stringify(false),
             "typeof PLUGIN_FBINSTANT": JSON.stringify(false),
-            "typeof FEATURE_SOUND": JSON.stringify(true)
+            "typeof FEATURE_SOUND": JSON.stringify(true),
+            "__DEV_BUILD__": JSON.stringify(true), // dev/watch: version tag + cheats always on
+            "__VERSION__": JSON.stringify(VERSION)
         }),
         new HtmlWebpackPlugin({
             template: "./index.html"
