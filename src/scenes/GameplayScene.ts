@@ -124,11 +124,6 @@ export class GameplayScene extends BaseScene
 
     private refreshScaleAndResize(): void
     {
-        // iPad Chrome can return from the background with the page scrolled down, pushing the
-        // absolute HTML top bar off-screen and shifting the game up. Re-pin to the top first.
-        // The game never scrolls itself, and embedded it runs in an iframe, so this can't fight
-        // host-page scrolling (e.g. the help anchor).
-        if (this.game.device.os.iOS) window.scrollTo(0, 0);
         this.scale.refresh();
         this.doResize(this.scale.gameSize as Phaser.Structs.Size);
     }

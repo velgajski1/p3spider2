@@ -9,7 +9,7 @@
         "prebuild:prod": "node scripts/bump-version.cjs",
         "build:prod": "webpack --config webpack/config.prod.js --env release",
         "upload": "node uploadBin.cjs",
-        "watch": "nodemon -e ts,js --watch src --watch index.html --exec \"npm run build && npm run upload || exit 1 \""
+        "watch": "nodemon -e ts,js --watch src --watch index.html --exec \"npm run build && npm run upload && npm run build:prod || exit 1 \""
     },
     "repository": {
         "type": "git",
